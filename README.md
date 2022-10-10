@@ -1,0 +1,3 @@
+# fast install
+
+* A FAIRE
