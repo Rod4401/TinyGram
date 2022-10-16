@@ -1,162 +1,33 @@
-
 <html>
-
-    <head>
+  <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <style type="text/css">
-    H1,H2,H3,H4 { background:#FFFFFF; color:#226666; border-width: thin; border-color:#66FF88; border-style:outset }
-    </style>
     <!-- CSS only -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
+    <link href='https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link href='https://css.gg/heart.css' rel='stylesheet' type='text/css'>
+    <link href="./main.css" rel="stylesheet" type="text/css">
     <!-- JavaScript Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3" crossorigin="anonymous"></script>
-    <title>blank page</title>
-
-    <link href='https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap' rel='stylesheet' type='text/css'>
-
-    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
-
-    <link href='https://css.gg/heart.css' rel='stylesheet'>
-
-    <style>
-    .material-icons {
-      margin-left: 20px;
-      font-size: 30px;
-    }
-
-    @media only screen and (max-width: 640px) {
-        #Recherche {
-            display: none;
-        }
-    }
-
-    body{
-        min-width: 400px;
-        overflow-y:hidden;
-    }
-
-    .unselectable {
-        -webkit-touch-callout: none;
-        -webkit-user-select: none;
-        -khtml-user-select: none;
-        -moz-user-select: none;
-        -ms-user-select: none;
-        user-select: none;
-    }
-
-    .iconProfile{
-        border-radius: 50%;
-        width: 28px;
-        height: 28px;
-    }
-
-    .centered {
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        /* bring your own prefixes */
-        transform: translate(-50%, -50%);
-    }
-
-    .overlayDiv {
-        width: 85%;
-        height: 85%;
-        z-index:1022;
-        background-color: Green;
-    }
-
-    .fondTransparent{
-        background-color: black;
-        width: 100%;
-        height: 100%;
-        position: fixed;
-        opacity: 0.5;
-        z-index:1021;
-    }
-
-    </style>
-
-    <script>
-    function liker(caller){
-      if(caller.innerHTML == "favorite_border"){
-        caller.innerHTML = "favorite";
-        caller.className = "material-icons text-danger unselectable";
-      }
-    }
-    </script>
-
+    <title>TinyGram</title>
+    <script src="https://unpkg.com/mithril/mithril.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.1.slim.min.js" integrity="sha256-w8CvhFs7iHNVUtnSP0YKEg00p9Ih13rlL9zGqvLdePA=" crossorigin="anonymous"></script>
+    <script src="js/main.js"></script>
     <script src="https://unpkg.com/jwt-decode/build/jwt-decode.js"></script>
-
     <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script src="js/notifications.js"></script>
+    
 
-
-
-        <script>
-        function handleCredentialResponse(response) {
-
-
-            console.log("callback called:"+response.credential);
-            // decodeJwtResponse() is a custom function defined by you
-            // to decode the credential response.
-            const responsePayload = jwt_decode(response.credential);
-
-            console.log("ID: " + responsePayload.sub);
-            console.log('Full Name: ' + responsePayload.name);
-            console.log('Given Name: ' + responsePayload.given_name);
-            console.log('Family Name: ' + responsePayload.family_name);
-            console.log("Image URL: " + responsePayload.picture);
-            console.log("Email: " + responsePayload.email);
-
-
-            const url = "_ah/api/myApi/v1/Hello"+'?access_token=' + response.credential
-
-            var img = document.createElement('img');
-            // ✅ Set Attributes on Element
-            img.setAttribute('src', responsePayload.picture);
-            img.setAttribute('class', 'nav-link material-icons unselectable iconProfile');
-            img.setAttribute('role', 'button');
-            img.setAttribute('data-bs-toggle', 'dropdown');
-            img.setAttribute('aria-expanded', 'false');
-            document.getElementById("iconUser").replaceWith(img);
-
-            var logout = document.createElement('a');
-            logout.setAttribute('class', "dropdown-item");
-            logout.setAttribute('href', "test.html");
-            logout.innerHTML = "Se déconnecter";
-            document.getElementById("connexion").replaceWith(logout);
-
-         }
-
-
-         function newPost(){
-            document.getElementById("newPost");
-            console.log("oekfpoekf");
-         }
-
-        </script>
-
-        <div id="g_id_onload"
-             data-client_id="132580382677-ddhimn8b8ua6kcna8l0kmnp7a65u0icp.apps.googleusercontent.com"
-             data-callback="handleCredentialResponse">
-        </div>
-
-    </head>
-
-    <body class="bg-light">
-        <newPost id="newPost" class="d-none">
-            <div class="fondTransparent"></div>
-            <div class="overlayDiv centered rounded"><p>gpeijgepjkgeg</p></div>
-        </newPost>
-
-
+    <div id="g_id_onload" data-client_id="132580382677-ddhimn8b8ua6kcna8l0kmnp7a65u0icp.apps.googleusercontent.com" data-callback="connect"></div>
+  </head>
+  <body class="bg-light">
+    <!-- New post -->
+    <div id="newPost"></div>
     <!-- Navigation -->
-    <nav class="navbar navbar-light bg-white justify-content-center sticky-top col-lg-12 border" role = "navigation">
-
+    <nav class="navbar navbar-light bg-white justify-content-center sticky-top col-lg-12 border" role="navigation">
       <div class="col-lg-2 offset-1">
-        <a class="navbar-brand text-dark unselectable" href="test.html" style="font-family: 'Dancing Script';font-size: 30;">TinyGram</a>
+        <a onClick="PostView.goTop()" class="navbar-brand text-dark unselectable" href="index.html" style="font-family: 'Dancing Script';font-size: 30;">TinyGram</a>
       </div>
-
-
       <div class="col-lg-3  mw-25" id="Recherche">
         <form class="form-inline mb-0">
           <div class="input-group">
@@ -167,58 +38,18 @@
           </div>
         </form>
       </div>
-
-
-
       <div class="col-lg-4 justify-content-center text-center d-flex">
-        <a href="test.html"><i class="material-icons text-dark unselectable">home</i></a>
-        <a><i onClick="newPost()" class="material-icons text-dark unselectable">add_box</i></a>
-        <a><i href="test.html" class="material-icons text-dark unselectable">favorite_border</i></a>
-        <li class="list-unstyled dropdown">
-            <a class="nav-link material-icons unselectable" id="iconUser" role="button" data-bs-toggle="dropdown" aria-expanded="false">account_circle</a>
-            <ul class="dropdown-menu unselectable" aria-labelledby="navbarDropdownMenuLink">
-                <li><a id="connexion" class="dropdown-item g_id_signin">Se connecter</a></li>
-                <li><a class="dropdown-item">A propos</a></li>
-            </ul>
-        </li>
-
-        <!--
-        <i class="material-icons text-dark">logout</i>
-        <i class="material-icons text-dark">login</i>
-        <i class="material-icons text-dark">favorite</i>
-        -->
-
-
+        <button type="button" class="btn material-icons text-dark unselectable" onClick="MainView.changeView('welcome')">home</button>
+        <button type="button" class="btn material-icons text-dark unselectable" onClick="NewPost.show()">add_box</button>
+        <button type="button" class="btn material-icons text-dark unselectable" onClick="MainView.changeView('profile')">favorite_border</button>
+        <div id="connection"></div>
+      </div>
     </nav>
-
-    <main>
-      <div class="container">
-      <lesPosts class="d-flex flex-column align-items-center bg-light " style="height:1000px;">
-
-        <div class="border mt-2 mb-2" style="width:400px;">
-          <i class="material-icons text-dark unselectable" onclick="liker(this);">favorite_border</i>
-        </div>
-
-        <div class="border mt-2 mb-2" style="width:400px;">
-          <p>Ceci est un post</p>
-        </div>
-
-        <div class="border mt-2 mb-2" style="width:400px;">
-          <p>Ceci est un post</p>
-        </div>
-
-        <div class="border mt-2 mb-2" style="width:400px;">
-          <p>Ceci est un post</p>
-        </div>
-
-
-
-      </lesPosts>
-    </div>
-
-
-
-    </main>
-    </body>
-    </html>
-    
+    <div id="main"></div>
+  </body>
+  <script>
+    m.mount(document.getElementById("main"), MainView);
+    m.mount(document.getElementById("connection"), Connection);
+    m.mount(document.getElementById("newPost"), NewPost);
+  </script>
+</html>
