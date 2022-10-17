@@ -23,76 +23,35 @@ var Connection = {
          * If the user is logged in, "disconnection" is displayed, otherwise the google sigin 
          */
         if(User.isLoged()) {
-            return m("li", {
-                class: "list-unstyled dropdown"
-            }, [
-                m("button", {
+            return m("button", {
                         class: "btn material-icons unselectable",
                         id: "iconUser",
                         "data-bs-toggle": "dropdown",
                         "aria-expanded": "false",
-                        type: "button"
+                        type: "button",
+                        onclick: function() {
+                            MainView.changeView("profile");
+                        }
                     },
                     m("img", {
                         class: "iconProfile",
                         src: User
                             .getUrl()
-                    })),
-                m("ul", {
-                    class: "dropdown-menu unselectable",
-                    "aria-labelledby": "navbarDropdownMenuLink"
-                }, [
-                    m("li",
-                        m("a", {
-                                class: "dropdown-item",
-                                href: "index.html"
-                            },
-                            "Se déconnecter"
-                        )
-                    ),
-                    m("li",
-                        m("a", {
-                                class: "dropdown-item"
-                            },
-                            "A propos"
-                        )
-                    )
-                ]),
-            ])
+                    }))
             
         } else {
-            return m("li", {
-                class: "list-unstyled dropdown"
-            }, [
-                m("button", {
+            return m("button", {
                         class: "btn material-icons unselectable",
                         id: "iconUser",
                         "data-bs-toggle": "dropdown",
                         "aria-expanded": "false",
-                        type: "button"
+                        type: "button",
+                        onclick: function() {
+                            User.showConnectView();
+                        }
                     },
                     "account_circle"
-                ), m(
-                    "ul", {
-                        class: "dropdown-menu unselectable",
-                        "aria-labelledby": "navbarDropdownMenuLink"
-                    }, [
-                        m("li",
-                            m("ab", {
-                                    class: "dropdown-item g_id_signin"
-                                },
-                                "Se connecter"
-                            )
-                        ),
-                        m("li",
-                            m("a", {
-                                    class: "dropdown-item"
-                                },
-                                "A propos"
-                            )
-                        )
-                    ]),
-            ])
+                )
         }
     }
 }
