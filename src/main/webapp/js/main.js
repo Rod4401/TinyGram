@@ -195,8 +195,13 @@ function connect(response) {
      * @return {bool} True if loged, false otherwise
      */
     isLoged: function () {
-      return this.response !=
-        null;
+        if(this.response != null){
+            this.hideConnectView();
+            return true;
+        } else {
+            this.showConnectView();
+        }
+      return false;
     },
   
     /**
@@ -214,6 +219,14 @@ function connect(response) {
      */
     isFollow: function (user) {
   
+    },
+
+    showConnectView: function(){
+        document.getElementById("login").className="container centered";
+    },
+
+    hideConnectView: function(){
+        document.getElementById("login").className="hide";
     }
   
   }
@@ -302,9 +315,7 @@ function connect(response) {
      */
     like: function (post) {
       if (User.isLoged()) {
-        console.log(
-          "Je like : " +
-          post);
+        //console.log("Je like : " + post);
         return m.request({
             method: "PUT",
             url: "url"
@@ -318,9 +329,7 @@ function connect(response) {
           })
       } else {
         //We could make a popup that invites us to connect
-        console.log(
-          "User not logged"
-        );
+        //console.log("User not logged");
       }
   
     },
@@ -359,8 +368,7 @@ function connect(response) {
           this.type = view
           m.redraw();
         }
-  
-      }
+    }
     }
   
   }
