@@ -6,7 +6,7 @@ function connect(response) {
     //console.log("Login");
     const responsePayload = jwt_decode(
         response.credential);
-    User.init(responsePayload);
+    User.init(responsePayload, response.credential);
     m.redraw();
     
 }
@@ -62,6 +62,7 @@ var Connection = {
 var User = {
     //The google response
     response: null,
+    credential: null,
     //The list of the user's followers
     listFollowers: [],
     //The list of the user's follows
@@ -71,9 +72,10 @@ var User = {
     The init function is a setter of the response 
     * @param {response} response The response from google login
     */
-    init: function(response) {
+    init: function(response, credential) {
         this.response =
             response;
+            this.credential = credential;
     },
     
     /**
@@ -202,9 +204,8 @@ var User = {
  * The post component allows you to manage posts
  */
 var Post = {
-    oninit: this.loadLists,
     //A list of random posts from user
-    list: [2, 3],
+    list: [],
     //List of my posts
     myList: [],
     //List of posts from people I follow
@@ -226,15 +227,13 @@ var Post = {
     loadListPerso: function() {
         return m.request({
                 method: "GET",
-                url: "url"
+                url: "_ah/api/myApi/v1/myPosts/0" + "?access_token=" + User.credential
             })
             .then(function(
                 result) {
                 Post.myList =
                     result
                     .items
-                //console.log("got:",result.items)
-                // m.redraw(true)
             })
     },
     
@@ -245,15 +244,13 @@ var Post = {
     loadListRandom: function() {
         return m.request({
                 method: "GET",
-                url: "url"
+                url: "_ah/api/myApi/v1/myPosts/0" + "?access_token=" + "eyJhbGciOiJSUzI1NiIsImtpZCI6ImVlMWI5Zjg4Y2ZlMzE1MWRkZDI4NGE2MWJmOGNlY2Y2NTliMTMwY2YiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL2FjY291bnRzLmdvb2dsZS5jb20iLCJuYmYiOjE2NjY0MzQyNTEsImF1ZCI6IjEzMjU4MDM4MjY3Ny1kZGhpbW44Yjh1YTZrY25hOGwwa21ucDdhNjV1MGljcC5hcHBzLmdvb2dsZXVzZXJjb250ZW50LmNvbSIsInN1YiI6IjEwODEzMjA4OTM3NDM1NTIxNTQ1OCIsImVtYWlsIjoibS5tZXVuaWVyLnJvZHJpZ3VlQGdtYWlsLmNvbSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJhenAiOiIxMzI1ODAzODI2NzctZGRoaW1uOGI4dWE2a2NuYThsMGttbnA3YTY1dTBpY3AuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJuYW1lIjoiUm9kcmlndWUgTWV1bmllciIsInBpY3R1cmUiOiJodHRwczovL2xoMy5nb29nbGV1c2VyY29udGVudC5jb20vYS9BTG01d3UxOUxDclN2YmNyYm5UUEx6NmpveXQzZGx5LWZfTGZCd1F4RW5DOGlBPXM5Ni1jIiwiZ2l2ZW5fbmFtZSI6IlJvZHJpZ3VlIiwiZmFtaWx5X25hbWUiOiJNZXVuaWVyIiwiaWF0IjoxNjY2NDM0NTUxLCJleHAiOjE2NjY0MzgxNTEsImp0aSI6IjRlMDcyNDUzMDhmOWM3YTkzMDJhYjA1YzE0ZDk3ZmFhMDMyYThkNWYifQ.oz4yhRntO8O2rf-ebjZ_BkT0NsaXmzmOgpU3zHodpj72eUnfrIec-1MGj_9hQ9KtSFu-yF65adVXuJfpCiUCN_qni5tnqTARzWLMeTb6myAA5vrSSQGUFIOn06umGV77qr3afidSLnjzTkiZdmPdfVyR_cBFnCV-l5Q2OkRrijncRg5Eyw8kqNy-VgtdnwPa8yLyf38VoVA3oZPdlO1Y_t-_KMXReAwSD9YDSmdeM4vXeXqoo-SwyzBlh4KaIha5B3gBRF6YqfKO4eS3FnTpQHtxWuWi4K-W3spuLu3rYrY-RVxYh8hLo6VTo7Bd3s_l7aHIwAEIh4GsmgthesXb0Q"
             })
             .then(function(
                 result) {
                 Post.list =
                     result
                     .items
-                //console.log("got:",result.items)
-                // m.redraw(true)
             })
     },
     
@@ -271,8 +268,6 @@ var Post = {
                 Post.followedList =
                     result
                     .items
-                //console.log("got:",result.items)
-                // m.redraw(true)
             })
     },
     
@@ -292,7 +287,6 @@ var Post = {
                 ) {
                     post.like =
                         true;
-                    //m.redraw()
                 })
         } else {
             //We could make a popup that invites us to connect
@@ -333,8 +327,8 @@ var MainView = {
             if(this.type !=
                 view) {
                 this.type = view
-                m.redraw();
             }
+            Post.loadLists();
         }
     }
     
@@ -344,11 +338,7 @@ var MainView = {
  * The component that manages the profile view
  */
 var ProfileView = {
-    oninit: User.loadLists,
-    //The currently displayed user list
-    listView: [...User
-        .listFollowers
-    ],
+    listView: [],
     
     //The type of user displayed (followers or follows)
     type: "followers",
@@ -565,16 +555,14 @@ var ProfileView = {
                                                         m("img", {
                                                             width: "100%",
                                                             height: "100%",
-                                                            src: item
-                                                                .url,
+                                                            src: item.properties.url,
                                                             class: "card unPost"
                                                         }),
                                                         m("div", {
                                                                 class: "hide likeStyle text-white",
                                                                 width: "100%"
                                                             },
-                                                            item
-                                                            .like +
+                                                            "0" +
                                                             "♡"
                                                             )
                                                     ]
@@ -600,7 +588,6 @@ var ProfileView = {
         //console.log(type);
         this.type = type;
         this.search("");
-        m.redraw();
     },
     
     /**
@@ -629,7 +616,7 @@ var ProfileView = {
  * The component that manages the post view
  */
 var PostView = {
-    oninit: Post.loadListRandom,
+    oninit: Post.loadListRandom(),
     
     /**
      * Function that returns to the top of page
@@ -650,12 +637,7 @@ var PostView = {
             class: "container d-flex justify-content-center",
             style: "width:400px;"
         }, m('div', [
-            Post
-            .list
-            .map(
-                function(
-                    item
-                ) {
+            Post.list.map(function(item) {
                     return m(
                         'div', {
                             class: "border rounded row row-cols-1 mt-2 bg-white",
@@ -716,7 +698,7 @@ var PostView = {
                                 [
                                     m('img', {
                                         class: "w-100 unselectable",
-                                        src: "LURL"
+                                        src: item.properties.url
                                     }),
                                 ]
                             ),
@@ -765,7 +747,7 @@ var PostView = {
                             
                             // DESCRIPTION
                             m('div',
-                                "LA DESCRIPTION"
+                                item.properties.description
                             ),
                             
                         ]
@@ -784,9 +766,51 @@ var NewPost = {
         if(this.isShow ==
             true) {
             //return ce que valou à fait !
-            return m("div",
-                "eijfoiejfe"
-            );
+            return m("div", {"id":"newPost"},
+            [
+              m("div", {"class":"fondTransparent",onclick: function() {
+                NewPost.hide()
+            }}),
+              m("div", {"class":"overlayDiv centered rounded onTop bg-light"},
+                [
+                  m("div", {"class":"centered-width"}, 
+                    m("p", {"class":"text-justify fw-bold"}, 
+                      "Créer une publication"
+                    )
+                  ),
+                  m("div", {"class":"row overlayContainer centered"},
+                    [
+                      m("div", {"class":"col-8 bg-body border","id":"url"}, 
+                        m("textarea", {"class":"form-control textArea","rows":"8","placeholder":"Saisir une url..."})
+                      ),
+                      m("div", {"class":"col-4 bg-body border","id":"infos"}, 
+                        m("div", {"class":"row row-cols-1"},
+                          [
+                            m("div", {"class":"col mt-2","id":"sender"},
+                              [
+                                m("img", {"class":"iconProfile","src":"https://lh3.googleusercontent.com/a/ALm5wu19LCrSvbcrbnTPLz6joyt3dly-f_LfBwQxEnC8iA=s96-c"}),
+                                m("h3", {"class":"fw-bold"}, 
+                                  "rod4401"
+                                )
+                              ]
+                            ),
+                            m("div", {"class":"col mt-1","id":"description"}, 
+                              m("textarea", {"class":"form-control textArea","id":"textAreaDescription","rows":"8","placeholder":"Ajoutez une légende..."})
+                            ),
+                            m("div", {"class":"col mt-1","id":"send","style":{"text-align":"end"}}, 
+                              m("a", {"class":"text-decoration-none","href":"#"}, 
+                                "Partager"
+                              )
+                            )
+                          ]
+                        )
+                      )
+                    ]
+                  )
+                ]
+              )
+            ]
+          );
         }
     },
     
