@@ -788,9 +788,9 @@ var NewPost = {
                           [
                             m("div", {"class":"col mt-2","id":"sender"},
                               [
-                                m("img", {"class":"iconProfile","src":"https://lh3.googleusercontent.com/a/ALm5wu19LCrSvbcrbnTPLz6joyt3dly-f_LfBwQxEnC8iA=s96-c"}),
+                                m("img", {"class":"iconProfile","src":User.response.picture}),
                                 m("h3", {"class":"fw-bold"}, 
-                                  "rod4401"
+                                  User.response.given_name
                                 )
                               ]
                             ),
@@ -798,7 +798,9 @@ var NewPost = {
                               m("textarea", {"class":"form-control textArea","id":"textAreaDescription","rows":"8","placeholder":"Ajoutez une légende..."})
                             ),
                             m("div", {"class":"col mt-1","id":"send","style":{"text-align":"end"}}, 
-                              m("a", {"class":"text-decoration-none","href":"#"}, 
+                              m("a", {"class":"text-decoration-none",onclick : function(){
+                                  NewPost.post();
+                              }}, 
                                 "Partager"
                               )
                             )
@@ -831,6 +833,17 @@ var NewPost = {
     hide: function() {
         this.isShow = false;
         m.redraw();
+    },
+
+    post: function(){
+        return m.request({
+            method: "GET",
+            url: "_ah/api/myApi/v1/url" + "?access_token" + User.credential 
+        })
+        .then(function(result) {
+            //Post ajouté
+            NewPost.hide();
+        })
     }
     
 }
