@@ -10,10 +10,13 @@ import com.google.api.server.spi.config.ApiMethod;
 import com.google.api.server.spi.config.ApiMethod.HttpMethod;
 import com.google.api.server.spi.config.ApiNamespace;
 import com.google.api.server.spi.config.Named;
+import com.google.api.server.spi.config.Nullable;
 import com.google.api.server.spi.response.BadRequestException;
+import com.google.api.server.spi.response.CollectionResponse;
 import com.google.api.server.spi.response.ForbiddenException;
 import com.google.api.server.spi.response.UnauthorizedException;
-import com.google.appengine.api.datastore.Transaction;
+
+import com.google.appengine.api.datastore.Cursor;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
@@ -25,8 +28,9 @@ import com.google.appengine.api.datastore.Query.FilterPredicate;
 
 import tinygram.entities.PostIn;
 
+import com.google.appengine.api.datastore.Transaction;
 
-@Api(name = "TinyGram-API",
+@Api(name = "apiTinyGram",
      version = "v1",
      audiences = "883199197906-konv6vuei354vcmadoipr5b2v733sos8.apps.googleusercontent.com",
      clientIds = {"883199197906-konv6vuei354vcmadoipr5b2v733sos8.apps.googleusercontent.com"},
@@ -50,8 +54,8 @@ public class TinyGramEndpoint {
         //  Filter low performance cost verification parameters
         if(user == null) throw new UnauthorizedException("Invalid credentials");
         if(pseudo == null || pseudo.isEmpty()) throw new BadRequestException("Invalid parameters: pseudo cannot be null or empty !");
-        if(fname == null || pseudo.isEmpty()) throw new BadRequestException("Invalid firstName: firstname cannot be null or empty !");
-        if(lname == null || pseudo.isEmpty()) throw new BadRequestException("Invalid lastName: lastname cannot be null or empty !");
+        if(fname == null || fname.isEmpty()) throw new BadRequestException("Invalid firstName: firstname cannot be null or empty !");
+        if(lname == null || lname.isEmpty()) throw new BadRequestException("Invalid lastName: lastname cannot be null or empty !");
 
         //  Avoid too long informations
         if(pseudo.length() > 16) throw new BadRequestException("User informations too long: Pseudonym might be too long !");
@@ -79,6 +83,7 @@ public class TinyGramEndpoint {
 
         //  Generate user entity that will be returned and stored
         Entity userEntity = new Entity("User", user.getId());
+        userEntity.setProperty("userID", user.getId());
         userEntity.setProperty("pseudo", pseudo);
         userEntity.setProperty("firstName", fname);
         userEntity.setProperty("lastName", lname);
@@ -155,7 +160,7 @@ public class TinyGramEndpoint {
 	}
 
     @ApiMethod(name = "followUser", httpMethod = HttpMethod.GET)
-	public Entity followUser(User user, String followedUserID) throws ForbiddenException, BadRequestException, UnauthorizedException {
+	public Entity followUser(User user, @Named("FollowedUserID") String followedUserID) throws ForbiddenException, BadRequestException, UnauthorizedException {
 
         //  Provided user must be valid
         if(user == null) throw new UnauthorizedException("Invalid credentials !");
