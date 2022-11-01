@@ -13,7 +13,7 @@
 		<servlet-class>com.google.api.server.spi.EndpointsServlet</servlet-class>
 		<init-param>
 			<param-name>services</param-name>
-			<param-value>back.Endpoint</param-value>
+			<param-value>tinygram.TinyGramEndpoint</param-value>
 		</init-param>
 	</servlet>
 	<!-- Route API method requests to the backend. -->
