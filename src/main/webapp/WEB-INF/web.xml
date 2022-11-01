@@ -19,7 +19,7 @@
 	<!-- Route API method requests to the backend. -->
 	<servlet-mapping>
 		<servlet-name>EndpointsServlet</servlet-name>
-		<url-pattern>/_ah/api/*</url-pattern>
+		<url-pattern>/api/*</url-pattern>
 	</servlet-mapping>
 
 
