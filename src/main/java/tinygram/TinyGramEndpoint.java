@@ -10,13 +10,10 @@ import com.google.api.server.spi.config.ApiMethod;
 import com.google.api.server.spi.config.ApiMethod.HttpMethod;
 import com.google.api.server.spi.config.ApiNamespace;
 import com.google.api.server.spi.config.Named;
-import com.google.api.server.spi.config.Nullable;
 import com.google.api.server.spi.response.BadRequestException;
-import com.google.api.server.spi.response.CollectionResponse;
 import com.google.api.server.spi.response.ForbiddenException;
 import com.google.api.server.spi.response.UnauthorizedException;
 
-import com.google.appengine.api.datastore.Cursor;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
@@ -27,6 +24,7 @@ import com.google.appengine.api.datastore.Query.FilterOperator;
 import com.google.appengine.api.datastore.Query.FilterPredicate;
 
 import tinygram.entities.PostIn;
+import tinygram.entities.UserIn;
 
 import com.google.appengine.api.datastore.Transaction;
 
@@ -43,25 +41,26 @@ import com.google.appengine.api.datastore.Transaction;
 
 public class TinyGramEndpoint {
 
-    private String getProfilePicture(User user) {
-        if(user == null) return null;
-        return "http://profiles.google.com/s2/photos/profile/" + user.getId();
-    }
-
-    @ApiMethod(name = "signIn", httpMethod = HttpMethod.GET)
-	public Entity signIn(User user, @Named("pseudo") String pseudo, @Named("firstName") String fname, @Named("lastName") String lname) throws BadRequestException, UnauthorizedException {
+    @ApiMethod(name = "signIn", httpMethod = HttpMethod.POST)
+	public Entity signIn(User user, UserIn userInfos) throws BadRequestException, UnauthorizedException {
 
         //  Filter low performance cost verification parameters
         if(user == null) throw new UnauthorizedException("Invalid credentials");
-        if(pseudo == null || pseudo.isEmpty()) throw new BadRequestException("Invalid parameters: pseudo cannot be null or empty !");
-        if(fname == null || fname.isEmpty()) throw new BadRequestException("Invalid firstName: firstname cannot be null or empty !");
-        if(lname == null || lname.isEmpty()) throw new BadRequestException("Invalid lastName: lastname cannot be null or empty !");
+        if(userInfos == null) throw new BadRequestException("Invalid parameters: Need user informations to be able de register someone !");
+        if(userInfos.pseudo == null || userInfos.pseudo.isEmpty()) throw new BadRequestException("Invalid parameters: pseudo cannot be null or empty !");
+        if(userInfos.fname == null || userInfos.fname.isEmpty()) throw new BadRequestException("Invalid firstName: firstname cannot be null or empty !");
+        if(userInfos.lname == null || userInfos.lname.isEmpty()) throw new BadRequestException("Invalid lastName: lastname cannot be null or empty !");
+        if(userInfos.pictureURL == null || userInfos.pictureURL.isEmpty()) throw new BadRequestException("Invalid profile picture URL: URL cannot be null or empty !");
 
         //  Avoid too long informations
-        if(pseudo.length() > 16) throw new BadRequestException("User informations too long: Pseudonym might be too long !");
-        if(fname.length() > 51 || lname.length() > 51) throw new BadRequestException("User informations too long: firstName or lastName might be too long !");
+        if(userInfos.pseudo.length() > 16) throw new BadRequestException("User informations too long: Pseudonym might be too long !");
+        if(userInfos.fname.length() > 51 || userInfos.lname.length() > 51) throw new BadRequestException("User informations too long: firstName or lastName might be too long !");
 
-        //  Might need a step to verify user infos to avoid injection
+        //  Check if the provided picture profile URL is from google
+        Pattern pattern = Pattern.compile("^https:\\/\\/lh[0-9]\\.googleusercontent\\.com\\/a\\/[a-zA-Z0-9]+=.*$");
+        Matcher matcher = pattern.matcher(userInfos.pictureURL);
+
+        if(!matcher.matches()) throw new BadRequestException("Invalid profile picture URL: Profile picture URL must be a picture of a google account !");
         
         DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
 
@@ -77,17 +76,17 @@ public class TinyGramEndpoint {
         //  Verify that the pseudonym is not already taken by an other user
         query = new Query("User").setFilter(new FilterPredicate("pseudo",
                                                                         FilterOperator.EQUAL,
-                                                                        pseudo));
+                                                                        userInfos.pseudo));
 		pq = datastore.prepare(query);
         if(pq.countEntities(fo) > 0) throw new UnauthorizedException("Pseudonym already taken, PLEASE choose another one !");
 
         //  Generate user entity that will be returned and stored
         Entity userEntity = new Entity("User", user.getId());
         userEntity.setProperty("userID", user.getId());
-        userEntity.setProperty("pseudo", pseudo);
-        userEntity.setProperty("firstName", fname);
-        userEntity.setProperty("lastName", lname);
-        userEntity.setProperty("pictureUrl", getProfilePicture(user));
+        userEntity.setProperty("pseudo", userInfos.pseudo);
+        userEntity.setProperty("firstName", userInfos.fname);
+        userEntity.setProperty("lastName", userInfos.lname);
+        userEntity.setProperty("pictureUrl", userInfos.pictureURL);
         userEntity.setProperty("lastLogin", new Date());
 
         datastore.put(userEntity);
