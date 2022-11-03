@@ -119,8 +119,8 @@ public class TinyGramEndpoint {
 	}
 
 
-    @ApiMethod(name = "postPublication", httpMethod = HttpMethod.GET)
-	public Entity postPublication(PostIn post, User user) throws ForbiddenException, BadRequestException, UnauthorizedException {
+    @ApiMethod(name = "postPublication", httpMethod = HttpMethod.POST)
+	public Entity postPublication(User user, PostIn post) throws ForbiddenException, BadRequestException, UnauthorizedException {
 
         //  Provided user must be valid
         if(user == null) throw new UnauthorizedException("Invalid credentials !");
