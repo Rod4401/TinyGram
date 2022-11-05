@@ -243,7 +243,7 @@ public class TinyGramEndpoint {
 
         Date currentDate = new Date();
 
-        Key postEntityKey = KeyFactory.createKey("Post", String.valueOf(Long.MAX_VALUE - currentDate.getTime() + user.hashCode()));
+        Key postEntityKey = KeyFactory.createKey("Post", String.format("%d%s", currentDate.getTime(), user.getId()));
 
 		Entity postEntity = new Entity(postEntityKey);        
 		postEntity.setProperty("creatorID", user.getId());
@@ -313,8 +313,7 @@ public class TinyGramEndpoint {
 
         //  Good the follow isn't already registered
         Date currentDate = new Date();
-        Key followEntityKey = KeyFactory.createKey("Follow",
-                                                     String.valueOf(Long.MAX_VALUE - followedUserID.hashCode() + user.hashCode()));
+        Key followEntityKey = KeyFactory.createKey("Follow", String.format("%s%s", followedUserID, user.getId()));
         
         //  Make sure that the user will no try to follow the same user at the same time
 		Transaction txn = datastore.beginTransaction();
@@ -404,7 +403,7 @@ public class TinyGramEndpoint {
 		pq = datastore.prepare(query);
         if(pq.countEntities(fo) == 0) throw new UnauthorizedException("LikedPostID is invalid: Please like something that truely exist !");
 
-        Key likeEntityKey = KeyFactory.createKey("Like", String.valueOf(Long.MAX_VALUE - likedPostID.hashCode() + user.hashCode()));
+        Key likeEntityKey = KeyFactory.createKey("Like", String.format("%s%s", likedPostID, user.getId()));
 
         //  Verify that the user didn't already liked this post in our datastore
         query = new Query("Like").setFilter(new FilterPredicate(Entity.KEY_RESERVED_PROPERTY,
@@ -527,7 +526,7 @@ public class TinyGramEndpoint {
         //  Now we can continue by creating the responseEntity
         long nbLikes = getLikeNumber(datastore, postEntityKey);
 
-        Key likeEntityKey = KeyFactory.createKey("Like", String.valueOf(Long.MAX_VALUE - postID.hashCode() + user.hashCode()));
+        Key likeEntityKey = KeyFactory.createKey("Like", String.format("%s%s", postID, user.getId()));
 
         query = new Query("Like").setFilter(new FilterPredicate(Entity.KEY_RESERVED_PROPERTY,
                                                                 FilterOperator.EQUAL,
@@ -587,7 +586,7 @@ public class TinyGramEndpoint {
         //  Now we can continue by creating the responseEntity
         long nbFollow = getFollowNumber(datastore, userFollowKey);
 
-        Key followEntityKey = KeyFactory.createKey("Follow", String.valueOf(Long.MAX_VALUE - userID.hashCode() + user.hashCode()));
+        Key followEntityKey = KeyFactory.createKey("Follow", String.format("%s%s", userID, user.getId()));
 
         query = new Query("Follow").setFilter(new FilterPredicate(Entity.KEY_RESERVED_PROPERTY,
                                                                 FilterOperator.EQUAL,
