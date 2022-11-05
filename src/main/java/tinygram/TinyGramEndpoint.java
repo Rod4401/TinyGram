@@ -1,7 +1,9 @@
 package tinygram;
 
+
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -64,7 +66,7 @@ import com.google.appengine.api.datastore.Transaction;
  *  Master 1 ALMA - Nantes Université
  *  
  *      Quentin     Gomes Dos Reis
- *      Rogdrigue   Meunier
+ *      Rodrigue    Meunier         (Captain Rillette)
  *      Valentin    Goubon
  */
 
@@ -286,7 +288,7 @@ public class TinyGramEndpoint {
         if(followedUserID == null || !matcher.matches()) throw new BadRequestException("FollowedUserID is absent: either the user is a ghost or it is a mistake but the ID must be related to a valid and registred user account !");
 
         //  Check if the user will not follow himself, that will be strange
-        if(followedUserID == user.getId()) throw  new BadRequestException("Reflexing following: Someone cannot follow himself that will be strange !");
+        if(followedUserID.equals(user.getId())) throw  new BadRequestException("Reflexing following: Someone cannot follow himself that will be strange !");
 
 
         DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
@@ -384,7 +386,6 @@ public class TinyGramEndpoint {
 
         Key userKey = KeyFactory.createKey("User", user.getId());
         Key likedPostEntityKey = KeyFactory.createKey("Post", likedPostID);
-        log.info(likedPostEntityKey.toString());
 
         DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
 
@@ -449,5 +450,154 @@ public class TinyGramEndpoint {
 		txn.commit();
 
 		return likeEntity;
+	}
+
+
+    private long getLikeNumber(DatastoreService datastore, Key postKey){
+        Long value = 0L;
+
+        Query query = new Query("LikeCounter").setAncestor(postKey);
+        PreparedQuery preparedQuery = datastore.prepare(query);
+        List<Entity> listCnt = preparedQuery.asList(FetchOptions.Builder.withLimit(10));
+
+        for(Entity e : listCnt){
+            value += (Long) e.getProperty("value");
+        }
+
+        return value;
+    }
+
+    private long getFollowNumber(DatastoreService datastore, Key userKey){
+        Long value = 0L;
+
+        Query query = new Query("FollowCounter").setAncestor(userKey);
+        PreparedQuery preparedQuery = datastore.prepare(query);
+        List<Entity> listCnt = preparedQuery.asList(FetchOptions.Builder.withLimit(10));
+
+        for(Entity e : listCnt){
+            value += (Long) e.getProperty("value");
+        }
+
+        return value;
+    }
+
+
+    /*
+     *  likeState Method
+     *      
+     *      Used to know the number of likes of a post and if the user who requested it liked this post.
+     * 
+     *      NOTE: It can only be called normally if signIn has already been called successfully once.
+     */
+    @ApiMethod(name = "likeState", httpMethod = HttpMethod.GET)
+	public Entity likeState(@Named("postID") String postID, User user) throws ForbiddenException, BadRequestException, UnauthorizedException, InternalServerErrorException {
+
+        //  Provided user must be valid
+        if(user == null) throw new UnauthorizedException("Invalid credentials !");
+
+        //  Provided post id must be not null
+        if(postID == null) throw new UnauthorizedException("PostID is absent: either the post doesn't exist or it is a mistake but the postID must be related to a valid and existing post !");
+
+        //  Might need to process a regex on postID
+        Pattern pattern = Pattern.compile("^[0-9]+$");
+        Matcher matcher = pattern.matcher(postID);
+        if(!matcher.matches()) throw new BadRequestException("PostID is invalid: either it is a mistake but the postID must be related to a valid and existing post !");
+
+        Key userKey = KeyFactory.createKey("User", user.getId());
+        Key postEntityKey = KeyFactory.createKey("Post", postID);
+
+        DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+
+        //  Verify that the user is present in our datastore
+        Query query = new Query("User").setFilter(new FilterPredicate(Entity.KEY_RESERVED_PROPERTY,
+                                                                        FilterOperator.EQUAL,
+                                                                        userKey));
+		PreparedQuery pq = datastore.prepare(query);
+        FetchOptions fo = FetchOptions.Builder.withLimit(1);
+        if(pq.countEntities(fo) == 0) throw new UnauthorizedException("Not registered: Please register before trying to fetch something !");
+
+        //  Verify that the post is present in our datastore
+        query = new Query("Post").setFilter(new FilterPredicate(Entity.KEY_RESERVED_PROPERTY,
+                                                                        FilterOperator.EQUAL,
+                                                                        postEntityKey));
+		pq = datastore.prepare(query);
+        if(pq.countEntities(fo) == 0) throw new UnauthorizedException("PostID is invalid: Please fetch something that truely exist !");
+
+        //  Everything is okay
+        //  Now we can continue by creating the responseEntity
+        long nbLikes = getLikeNumber(datastore, postEntityKey);
+
+        Key likeEntityKey = KeyFactory.createKey("Like", String.valueOf(Long.MAX_VALUE - postID.hashCode() + user.hashCode()));
+
+        query = new Query("Like").setFilter(new FilterPredicate(Entity.KEY_RESERVED_PROPERTY,
+                                                                FilterOperator.EQUAL,
+                                                                likeEntityKey));
+		pq = datastore.prepare(query);
+
+        Entity response = new Entity("LikeState");
+        response.setProperty("nbLikes", nbLikes);
+        response.setProperty("userHasLiked", pq.countEntities(fo) > 0);
+
+		return response;
+	}
+    
+
+    /*
+     *  followState Method
+     *      
+     *      Used to know the number of follow of a user and if the user who requested it is following this user.
+     * 
+     *      NOTE: It can only be called normally if signIn has already been called successfully once.
+     */
+    @ApiMethod(name = "followState", httpMethod = HttpMethod.GET)
+	public Entity followState(@Named("userID") String userID, User user) throws ForbiddenException, BadRequestException, UnauthorizedException, InternalServerErrorException {
+
+        //  Provided user must be valid
+        if(user == null) throw new UnauthorizedException("Invalid credentials !");
+
+        //  Provided post id must be not null
+        if(userID == null) throw new UnauthorizedException("UserID is absent: either the userID doesn't exist or it is a mistake but the userID must be related to a valid and registered user !");
+
+        //  Might need to process a regex on userID
+        Pattern pattern = Pattern.compile("^[0-9]+$");
+        Matcher matcher = pattern.matcher(userID);
+        if(!matcher.matches()) throw new BadRequestException("UserID is invalid: either it is a mistake but the UserID must be related to a valid and registered user !");
+
+        Key userKey = KeyFactory.createKey("User", user.getId());
+        Key userFollowKey = KeyFactory.createKey("User", userID);
+
+        DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+
+        //  Verify that the user is present in our datastore
+        Query query = new Query("User").setFilter(new FilterPredicate(Entity.KEY_RESERVED_PROPERTY,
+                                                                        FilterOperator.EQUAL,
+                                                                        userKey));
+		PreparedQuery pq = datastore.prepare(query);
+        FetchOptions fo = FetchOptions.Builder.withLimit(1);
+        if(pq.countEntities(fo) == 0) throw new UnauthorizedException("Not registered: Please register before trying to fetch something !");
+
+        //  Verify that the post is present in our datastore
+        query = new Query("User").setFilter(new FilterPredicate(Entity.KEY_RESERVED_PROPERTY,
+                                                                        FilterOperator.EQUAL,
+                                                                        userFollowKey));
+		pq = datastore.prepare(query);
+        if(pq.countEntities(fo) == 0) throw new UnauthorizedException("UserID is invalid: Please fetch a user that truely exist !");
+
+        //  Everything is okay
+        //  Now we can continue by creating the responseEntity
+        long nbFollow = getFollowNumber(datastore, userFollowKey);
+
+        Key followEntityKey = KeyFactory.createKey("Follow", String.valueOf(Long.MAX_VALUE - userID.hashCode() + user.hashCode()));
+
+        query = new Query("Follow").setFilter(new FilterPredicate(Entity.KEY_RESERVED_PROPERTY,
+                                                                FilterOperator.EQUAL,
+                                                                followEntityKey));
+		pq = datastore.prepare(query);
+
+        Entity response = new Entity("FollowState");
+        response.setProperty("nbFollow", nbFollow);
+        response.setProperty("userHasFollowed", pq.countEntities(fo) > 0);
+
+		return response;
 	}
 }
