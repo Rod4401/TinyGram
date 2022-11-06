@@ -18,6 +18,8 @@ import com.google.api.server.spi.response.BadRequestException;
 import com.google.api.server.spi.response.ForbiddenException;
 import com.google.api.server.spi.response.InternalServerErrorException;
 import com.google.api.server.spi.response.UnauthorizedException;
+import com.google.api.server.spi.response.NotFoundException;
+
 
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
@@ -76,6 +78,7 @@ public class TinyGramEndpoint {
 
     private static final Logger log = Logger.getLogger(TinyGramEndpoint.class.getName());
 
+
     //  We abstract the fact that this user is already registered and valid
     //  Because it will be just callable by this vlass not any user...
     private void createAndInitFollowCounters(DatastoreService datastore, User user) throws UnauthorizedException{
@@ -89,6 +92,7 @@ public class TinyGramEndpoint {
             datastore.put(counter);
         }
     }
+
 
     private void createAndInitLikeCounters(DatastoreService datastore, Key postKey){
         Entity counter;
@@ -235,8 +239,9 @@ public class TinyGramEndpoint {
                                                                         FilterOperator.EQUAL,
                                                                         userKey));
 		PreparedQuery pq = datastore.prepare(query);
-        Entity userEntity = pq.asSingleEntity();
-        if(userEntity == null) throw new UnauthorizedException("Not registered: Please register before trying to post something !");
+        FetchOptions fo = FetchOptions.Builder.withLimit(1);
+
+        if(pq.countEntities(fo) == 0) throw new UnauthorizedException("Not registered: Please register before trying to post something !");
 
         //  Good the user is registered
         //  Now let's create post entity
@@ -274,7 +279,7 @@ public class TinyGramEndpoint {
      *      NOTE 2 : It can only be called normally if signIn has already been called successfully once.
      */
     @ApiMethod(name = "followUser", httpMethod = HttpMethod.GET)
-	public Entity followUser(@Named("userID") String followedUserID, User user) throws ForbiddenException, BadRequestException, UnauthorizedException, InternalServerErrorException {
+	public Entity followUser(@Named("userID") String followedUserID, User user) throws ForbiddenException, BadRequestException, UnauthorizedException, NotFoundException, InternalServerErrorException {
 
         //  Provided user must be valid
         if(user == null) throw new UnauthorizedException("Invalid credentials !");
@@ -309,7 +314,7 @@ public class TinyGramEndpoint {
                                                                         FilterOperator.EQUAL,
                                                                         followedUserKey));
 		pq = datastore.prepare(query);
-        if(pq.countEntities(fo) == 0) throw new UnauthorizedException("FollowedUser not registered: An user cannot follow an unregistered user !");
+        if(pq.countEntities(fo) == 0) throw new NotFoundException("Not found: An user cannot follow an unregistered user !");
 
         //  Good the follow isn't already registered
         Date currentDate = new Date();
@@ -322,7 +327,7 @@ public class TinyGramEndpoint {
                                                                     FilterOperator.EQUAL,
                                                                     followEntityKey));
 		pq = datastore.prepare(query);
-        if(pq.countEntities(fo) > 0) throw new UnauthorizedException("Already followed: You are already following user !");
+        if(pq.countEntities(fo) > 0) throw new ForbiddenException("Already followed: You are already following user !");
 
         //  Now let's create follow entity
         Entity followEntity = new Entity(followEntityKey);
@@ -370,13 +375,13 @@ public class TinyGramEndpoint {
      *      NOTE: It can only be called normally if signIn has already been called successfully once.
      */
     @ApiMethod(name = "likePost", httpMethod = HttpMethod.GET)
-	public Entity likePost(@Named("postID") String likedPostID, User user) throws ForbiddenException, BadRequestException, UnauthorizedException, InternalServerErrorException {
+	public Entity likePost(@Named("postID") String likedPostID, User user) throws ForbiddenException, BadRequestException, UnauthorizedException, NotFoundException, InternalServerErrorException {
 
         //  Provided user must be valid
         if(user == null) throw new UnauthorizedException("Invalid credentials !");
 
         //  Provided post id must be not null
-        if(likedPostID == null) throw new UnauthorizedException("LikedPostID is absent: either the post doesn't exist or it is a mistake but the postID must be related to a valid and existing post !");
+        if(likedPostID == null) throw new BadRequestException("LikedPostID is absent: either the post doesn't exist or it is a mistake but the postID must be related to a valid and existing post !");
 
         //  Might need to process a regex on likedPostID
         Pattern pattern = Pattern.compile("^[0-9]+$");
@@ -401,7 +406,7 @@ public class TinyGramEndpoint {
                                                                         FilterOperator.EQUAL,
                                                                         likedPostEntityKey));
 		pq = datastore.prepare(query);
-        if(pq.countEntities(fo) == 0) throw new UnauthorizedException("LikedPostID is invalid: Please like something that truely exist !");
+        if(pq.countEntities(fo) == 0) throw new NotFoundException("Not found: Please like something that truely exist !");
 
         Key likeEntityKey = KeyFactory.createKey("Like", String.format("%s%s", likedPostID, user.getId()));
 
@@ -410,7 +415,7 @@ public class TinyGramEndpoint {
                                                                 FilterOperator.EQUAL,
                                                                 likeEntityKey));
 		pq = datastore.prepare(query);
-        if(pq.countEntities(fo) > 0) throw new UnauthorizedException("Already liked: Please like something else you already liked that post !");
+        if(pq.countEntities(fo) > 0) throw new ForbiddenException("Already liked: Please like something else you already liked that post !");
 
         //  Good the post is exist
         //  Now let's create like entity
@@ -489,13 +494,13 @@ public class TinyGramEndpoint {
      *      NOTE: It can only be called normally if signIn has already been called successfully once.
      */
     @ApiMethod(name = "likeState", httpMethod = HttpMethod.GET)
-	public Entity likeState(@Named("postID") String postID, User user) throws ForbiddenException, BadRequestException, UnauthorizedException, InternalServerErrorException {
+	public Entity likeState(@Named("postID") String postID, User user) throws ForbiddenException, BadRequestException, UnauthorizedException, NotFoundException {
 
         //  Provided user must be valid
         if(user == null) throw new UnauthorizedException("Invalid credentials !");
 
         //  Provided post id must be not null
-        if(postID == null) throw new UnauthorizedException("PostID is absent: either the post doesn't exist or it is a mistake but the postID must be related to a valid and existing post !");
+        if(postID == null) throw new BadRequestException("PostID is absent: either the post doesn't exist or it is a mistake but the postID must be related to a valid and existing post !");
 
         //  Might need to process a regex on postID
         Pattern pattern = Pattern.compile("^[0-9]+$");
@@ -520,7 +525,7 @@ public class TinyGramEndpoint {
                                                                         FilterOperator.EQUAL,
                                                                         postEntityKey));
 		pq = datastore.prepare(query);
-        if(pq.countEntities(fo) == 0) throw new UnauthorizedException("PostID is invalid: Please fetch something that truely exist !");
+        if(pq.countEntities(fo) == 0) throw new NotFoundException("Not found: Please fetch something that truely exist !");
 
         //  Everything is okay
         //  Now we can continue by creating the responseEntity
@@ -549,13 +554,13 @@ public class TinyGramEndpoint {
      *      NOTE: It can only be called normally if signIn has already been called successfully once.
      */
     @ApiMethod(name = "followState", httpMethod = HttpMethod.GET)
-	public Entity followState(@Named("userID") String userID, User user) throws ForbiddenException, BadRequestException, UnauthorizedException, InternalServerErrorException {
+	public Entity followState(@Named("userID") String userID, User user) throws ForbiddenException, BadRequestException, UnauthorizedException, NotFoundException {
 
         //  Provided user must be valid
         if(user == null) throw new UnauthorizedException("Invalid credentials !");
 
-        //  Provided post id must be not null
-        if(userID == null) throw new UnauthorizedException("UserID is absent: either the userID doesn't exist or it is a mistake but the userID must be related to a valid and registered user !");
+        //  Provided userID must be not null
+        if(userID == null) throw new BadRequestException("UserID is absent: either the userID doesn't exist or it is a mistake but the userID must be related to a valid and registered user !");
 
         //  Might need to process a regex on userID
         Pattern pattern = Pattern.compile("^[0-9]+$");
@@ -575,12 +580,12 @@ public class TinyGramEndpoint {
         FetchOptions fo = FetchOptions.Builder.withLimit(1);
         if(pq.countEntities(fo) == 0) throw new UnauthorizedException("Not registered: Please register before trying to fetch something !");
 
-        //  Verify that the post is present in our datastore
+        //  Verify that the requested user is present in our datastore
         query = new Query("User").setFilter(new FilterPredicate(Entity.KEY_RESERVED_PROPERTY,
                                                                         FilterOperator.EQUAL,
                                                                         userFollowKey));
 		pq = datastore.prepare(query);
-        if(pq.countEntities(fo) == 0) throw new UnauthorizedException("UserID is invalid: Please fetch a user that truely exist !");
+        if(pq.countEntities(fo) == 0) throw new NotFoundException("Not found: Please fetch a user that truely exist !");
 
         //  Everything is okay
         //  Now we can continue by creating the responseEntity
@@ -598,5 +603,187 @@ public class TinyGramEndpoint {
         response.setProperty("userHasFollowed", pq.countEntities(fo) > 0);
 
 		return response;
+	}
+
+
+    /*
+     *  fullUserInfos Method
+     *      
+     *      Used to know informations about a user.
+     * 
+     *      NOTE: It can only be called normally if signIn has already been called successfully once.
+     */
+    @ApiMethod(name = "fullUserInfos", httpMethod = HttpMethod.GET)
+	public Entity fullUserInfos(@Named("userID") String userID, User user) throws ForbiddenException, BadRequestException, UnauthorizedException, NotFoundException {
+
+        //  Provided user must be valid
+        if(user == null) throw new UnauthorizedException("Invalid credentials !");
+
+        //  Provided userID must be not null
+        if(userID == null) throw new BadRequestException("UserID is absent: either the userID doesn't exist or it is a mistake but the userID must be related to a valid and registered user !");
+
+        //  Might need to process a regex on userID
+        Pattern pattern = Pattern.compile("^[0-9]+$");
+        Matcher matcher = pattern.matcher(userID);
+        if(!matcher.matches()) throw new BadRequestException("UserID is invalid: either it is a mistake but the UserID must be related to a valid and registered user !");
+
+        Key userKey = KeyFactory.createKey("User", user.getId());
+        Key userRequestedKey = KeyFactory.createKey("User", userID);
+
+        DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+
+        //  Verify that the user is present in our datastore
+        Query query = new Query("User").setFilter(new FilterPredicate(Entity.KEY_RESERVED_PROPERTY,
+                                                                        FilterOperator.EQUAL,
+                                                                        userKey));
+		PreparedQuery pq = datastore.prepare(query);
+        FetchOptions fo = FetchOptions.Builder.withLimit(1);
+        if(pq.countEntities(fo) == 0) throw new UnauthorizedException("Not registered: Please register before trying to fetch something !");
+
+        //  Verify that the requested user is present in our datastore
+        query = new Query("User").setFilter(new FilterPredicate(Entity.KEY_RESERVED_PROPERTY,
+                                                                        FilterOperator.EQUAL,
+                                                                        userRequestedKey));
+		pq = datastore.prepare(query);
+        if(pq.countEntities(fo) == 0) throw new NotFoundException("Not found: Please fetch a user that truely exist !");
+
+        //  Everything is okay
+        //  Now we can continue by creating the responseEntity
+
+        Entity userRequested = pq.asSingleEntity();
+        //  For privacy, we will remove this property from the served version
+        userRequested.removeProperty("lastLogin");
+        
+        //  Add number of followers and if the user is currently liking this user
+        userRequested.setProperty("nbFollow", getFollowNumber(datastore, userRequestedKey));
+
+        //  Fetch and set property
+        Key followEntityKey = KeyFactory.createKey("Follow", String.format("%s%s", userID, user.getId()));
+        query = new Query("Follow").setFilter(new FilterPredicate(Entity.KEY_RESERVED_PROPERTY,
+                                                                FilterOperator.EQUAL,
+                                                                followEntityKey));
+		pq = datastore.prepare(query);
+        userRequested.setProperty("userHasFollowed", pq.countEntities(fo) > 0);
+
+		return userRequested;
+	}
+
+
+    /*
+     *  basicUserInfos Method
+     *      
+     *      Used to know basic informations about a user like pseudo, if the user is following and profile pictureURL.
+     * 
+     *      NOTE: It can only be called normally if signIn has already been called successfully once.
+     */
+    @ApiMethod(name = "basicUserInfos", httpMethod = HttpMethod.GET)
+	public Entity basicUserInfos(@Named("userID") String userID, User user) throws ForbiddenException, BadRequestException, UnauthorizedException, NotFoundException {
+
+        //  Provided user must be valid
+        if(user == null) throw new UnauthorizedException("Invalid credentials !");
+
+        //  Provided post id must be not null
+        if(userID == null) throw new BadRequestException("UserID is absent: either the userID doesn't exist or it is a mistake but the userID must be related to a valid and registered user !");
+
+        //  Might need to process a regex on userID
+        Pattern pattern = Pattern.compile("^[0-9]+$");
+        Matcher matcher = pattern.matcher(userID);
+        if(!matcher.matches()) throw new BadRequestException("UserID is invalid: either it is a mistake but the UserID must be related to a valid and registered user !");
+
+        Key userKey = KeyFactory.createKey("User", user.getId());
+        Key userRequestedKey = KeyFactory.createKey("User", userID);
+
+        DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+
+        //  Verify that the user is present in our datastore
+        Query query = new Query("User").setFilter(new FilterPredicate(Entity.KEY_RESERVED_PROPERTY,
+                                                                        FilterOperator.EQUAL,
+                                                                        userKey));
+		PreparedQuery pq = datastore.prepare(query);
+        FetchOptions fo = FetchOptions.Builder.withLimit(1);
+        if(pq.countEntities(fo) == 0) throw new UnauthorizedException("Not registered: Please register before trying to fetch something !");
+
+        //  Verify that the requested user is present in our datastore
+        query = new Query("User").setFilter(new FilterPredicate(Entity.KEY_RESERVED_PROPERTY,
+                                                                        FilterOperator.EQUAL,
+                                                                        userRequestedKey));
+		pq = datastore.prepare(query);
+        if(pq.countEntities(fo) == 0) throw new NotFoundException("Not found: Please fetch a user that truely exist !");
+
+        //  Everything is okay
+        //  Now we can continue by creating the responseEntity
+
+        Entity userRequested = pq.asSingleEntity();
+        //  For privacy, we will remove this property from the served version
+        userRequested.removeProperty("firstName");
+        userRequested.removeProperty("lastName");
+        userRequested.removeProperty("lastLogin");
+
+        //  Is user following the requested user ?
+        //  Fetch and set property
+        Key followEntityKey = KeyFactory.createKey("Follow", String.format("%s%s", userID, user.getId()));
+        query = new Query("Follow").setFilter(new FilterPredicate(Entity.KEY_RESERVED_PROPERTY,
+                                                                FilterOperator.EQUAL,
+                                                                followEntityKey));
+		pq = datastore.prepare(query);
+        userRequested.setProperty("userHasFollowed", pq.countEntities(fo) > 0);
+
+		return userRequested;
+	}
+
+
+    /*
+     *  postInfos Method
+     *      
+     *      Used to know basic informations about a post like creator, content, number of likes and if the demanding user is liking it.
+     * 
+     *      NOTE: It can only be called normally if signIn has already been called successfully once.
+     */
+    @ApiMethod(name = "postInfos", httpMethod = HttpMethod.GET)
+	public Entity postInfos(@Named("userID") String postID, User user) throws ForbiddenException, BadRequestException, UnauthorizedException, NotFoundException {
+
+        //  Provided user must be valid
+        if(user == null) throw new UnauthorizedException("Invalid credentials !");
+
+        //  Provided postID must be not null
+        if(postID == null) throw new BadRequestException("PostID is absent: either the postID doesn't exist or it is a mistake but the postID must be related to a valid and existing post !");
+
+        //  Might need to process a regex on postID
+        Pattern pattern = Pattern.compile("^[0-9]+$");
+        Matcher matcher = pattern.matcher(postID);
+        if(!matcher.matches()) throw new BadRequestException("PostID is invalid: either it is a mistake but the UserID must be related to a valid and existing post !");
+
+        Key userKey = KeyFactory.createKey("User", user.getId());
+        Key postRequestedKey = KeyFactory.createKey("Post", postID);
+
+        DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+
+        //  Verify that the user is present in our datastore
+        Query query = new Query("User").setFilter(new FilterPredicate(Entity.KEY_RESERVED_PROPERTY,
+                                                                        FilterOperator.EQUAL,
+                                                                        userKey));
+		PreparedQuery pq = datastore.prepare(query);
+        FetchOptions fo = FetchOptions.Builder.withLimit(1);
+        if(pq.countEntities(fo) == 0) throw new UnauthorizedException("Not found: Please register before trying to fetch something !");
+
+        //  Verify that the post is present in our datastore
+        query = new Query("Post").setFilter(new FilterPredicate(Entity.KEY_RESERVED_PROPERTY,
+                                                                        FilterOperator.EQUAL,
+                                                                        postRequestedKey));
+		pq = datastore.prepare(query);
+        Entity postRequested = pq.asSingleEntity();
+        if(postRequested == null) throw new NotFoundException("UserID is invalid: Please fetch a user that truely exist !");
+
+        //  Everything is okay
+        //  Now we will fetch likes and set properties around it
+        Key likeEntityKey = KeyFactory.createKey("Like", String.format("%s%s", postID, user.getId()));
+        query = new Query("Like").setFilter(new FilterPredicate(Entity.KEY_RESERVED_PROPERTY,
+                                                                FilterOperator.EQUAL,
+                                                                likeEntityKey));
+		pq = datastore.prepare(query);
+        postRequested.setProperty("nbLikes", getLikeNumber(datastore, postRequestedKey));
+        postRequested.setProperty("userHasLiked", pq.countEntities(fo) > 0);
+
+		return postRequested;
 	}
 }
