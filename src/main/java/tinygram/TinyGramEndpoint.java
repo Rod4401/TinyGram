@@ -1,26 +1,30 @@
 package tinygram;
 
-
+import java.io.IOException;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.google.api.client.http.MultipartContent;
+import com.google.api.client.http.MultipartContent.Part;
 import com.google.api.server.spi.auth.common.User;
 import com.google.api.server.spi.config.Api;
 import com.google.api.server.spi.config.ApiMethod;
 import com.google.api.server.spi.config.ApiMethod.HttpMethod;
 import com.google.api.server.spi.config.ApiNamespace;
 import com.google.api.server.spi.config.Named;
+import com.google.api.server.spi.config.Nullable;
 import com.google.api.server.spi.response.BadRequestException;
+import com.google.api.server.spi.response.CollectionResponse;
 import com.google.api.server.spi.response.ForbiddenException;
 import com.google.api.server.spi.response.InternalServerErrorException;
 import com.google.api.server.spi.response.UnauthorizedException;
 import com.google.api.server.spi.response.NotFoundException;
-
-
+import com.google.appengine.api.datastore.Cursor;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
@@ -28,9 +32,11 @@ import com.google.appengine.api.datastore.FetchOptions;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
 import com.google.appengine.api.datastore.Query;
+import com.google.appengine.api.datastore.QueryResultList;
 import com.google.appengine.api.datastore.PreparedQuery;
 import com.google.appengine.api.datastore.Query.FilterOperator;
 import com.google.appengine.api.datastore.Query.FilterPredicate;
+import com.google.appengine.api.datastore.Query.SortDirection;
 
 import tinygram.entities.PostIn;
 import tinygram.entities.UserIn;
@@ -181,7 +187,7 @@ public class TinyGramEndpoint {
      * 
      *      NOTE: It can only be called normally if signIn has already been called successfully once.
      */
-    @ApiMethod(name = "connect", httpMethod = HttpMethod.POST)
+    @ApiMethod(name = "connect", httpMethod = HttpMethod.PUT)
 	public Entity connect(User user) throws UnauthorizedException {
 
         //  Provided user must be valid
@@ -266,7 +272,6 @@ public class TinyGramEndpoint {
 		return postEntity;
 	}
 
-
     /*
      *  followUser Method
      *      
@@ -278,7 +283,7 @@ public class TinyGramEndpoint {
      * 
      *      NOTE 2 : It can only be called normally if signIn has already been called successfully once.
      */
-    @ApiMethod(name = "followUser", httpMethod = HttpMethod.GET)
+    @ApiMethod(name = "followUser", httpMethod = HttpMethod.POST)
 	public Entity followUser(@Named("userID") String followedUserID, User user) throws ForbiddenException, BadRequestException, UnauthorizedException, NotFoundException, InternalServerErrorException {
 
         //  Provided user must be valid
@@ -374,7 +379,7 @@ public class TinyGramEndpoint {
      * 
      *      NOTE: It can only be called normally if signIn has already been called successfully once.
      */
-    @ApiMethod(name = "likePost", httpMethod = HttpMethod.GET)
+    @ApiMethod(name = "likePost", httpMethod = HttpMethod.POST)
 	public Entity likePost(@Named("postID") String likedPostID, User user) throws ForbiddenException, BadRequestException, UnauthorizedException, NotFoundException, InternalServerErrorException {
 
         //  Provided user must be valid
@@ -764,7 +769,7 @@ public class TinyGramEndpoint {
                                                                         userKey));
 		PreparedQuery pq = datastore.prepare(query);
         FetchOptions fo = FetchOptions.Builder.withLimit(1);
-        if(pq.countEntities(fo) == 0) throw new UnauthorizedException("Not found: Please register before trying to fetch something !");
+        if(pq.countEntities(fo) == 0) throw new UnauthorizedException("Unregistered: Please register before trying to fetch something !");
 
         //  Verify that the post is present in our datastore
         query = new Query("Post").setFilter(new FilterPredicate(Entity.KEY_RESERVED_PROPERTY,
@@ -772,7 +777,7 @@ public class TinyGramEndpoint {
                                                                         postRequestedKey));
 		pq = datastore.prepare(query);
         Entity postRequested = pq.asSingleEntity();
-        if(postRequested == null) throw new NotFoundException("UserID is invalid: Please fetch a user that truely exist !");
+        if(postRequested == null) throw new NotFoundException("Not found: Please fetch a user that truely exist !");
 
         //  Everything is okay
         //  Now we will fetch likes and set properties around it
@@ -785,5 +790,46 @@ public class TinyGramEndpoint {
         postRequested.setProperty("userHasLiked", pq.countEntities(fo) > 0);
 
 		return postRequested;
+	}
+
+    /*
+     *  fetchNewPostsGlobal Method
+     *      
+     *      Used to get posts without paying attention to users followed.
+     * 
+     *      NOTE: It can only be called normally if signIn has already been called successfully once.
+     */
+    @ApiMethod(name = "fetchNewPostsGlobal", httpMethod = HttpMethod.GET)
+	public CollectionResponse<Entity> fetchNewPostsGlobal(User user, @Nullable @Named("next") String cursorString) throws ForbiddenException, BadRequestException, UnauthorizedException, NotFoundException {
+
+        //  Provided user must be valid
+        if(user == null) throw new UnauthorizedException("Invalid credentials !");
+
+        Key userKey = KeyFactory.createKey("User", user.getId());
+
+        DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+
+        //  Verify that the user is present in our datastore
+        Query query = new Query("User").setFilter(new FilterPredicate(Entity.KEY_RESERVED_PROPERTY,
+                                                                        FilterOperator.EQUAL,
+                                                                        userKey));
+		PreparedQuery pq = datastore.prepare(query);
+        FetchOptions fo = FetchOptions.Builder.withLimit(25);
+        if(pq.countEntities(fo) == 0) throw new UnauthorizedException("Unregistered: Please register before trying to fetch something !");
+
+        //  No pointer, no problem
+        if (cursorString != null) {
+			fo.startCursor(Cursor.fromWebSafeString(cursorString));
+		}
+
+        //  Prepare query in order to fetch posts by date
+        query = new Query("Post").addSort("date", SortDirection.DESCENDING);
+		pq = datastore.prepare(query);
+        
+        //  Get query result
+        QueryResultList<Entity> results = pq.asQueryResultList(fo);
+		cursorString = results.getCursor().toWebSafeString();
+
+		return CollectionResponse.<Entity>builder().setItems(results).setNextPageToken(cursorString).build();
 	}
 }
