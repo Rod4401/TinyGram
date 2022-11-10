@@ -1,6 +1,6 @@
 # TinyGram
 
-Le plus fou de tous les réseaux sociaux
+Le plus fou de tous les réseaux sociaux!
 
 ## Description
 C'est au coeur de l'internet qu'est né TinyGram. C'est un projet étudiant fait par
@@ -29,6 +29,8 @@ Ajoutez de la publicité pour rémunérer les dévéloppeurs sous-payer pour leu
 
 ## Authors and acknowledgment
 Graçe à TinyGram, nous avons pu être confronté avec les problèmes majeurs des réseaux sociaux. N'ayant pas beaucoup de documentation à ce sujet sur des solutions "optimales", il faut jouer de l'imagination de chacun. Avec l'aide de notre professeur, nous avons pu développer cette application web.
+
+> Il faut que ça scale !
 
 ## License
 Pas de licence si ce n'est de pas faire de bétise avec google cloud car ça peut vous coûter cher !
