@@ -3,12 +3,12 @@
 Le plus fou de tous les réseaux sociaux!
 
 ## Description
-C'est au coeur de l'internet qu'est né TinyGram. C'est un projet étudiant fait par
+C'est au coeur de l'internet qu'est né TinyGram. C'est un projet étudiant fait par:
 - Meunier Rodrigue
 - Gomes Dos Reis Quentin
 - Goubon Valentin
 
-L'objectif est de concevoir une application type réseaux social comme Instagram, dans le but de travailler sur les problèmes de concurences, ce passage à l'échelle et de stockage des données.
+L'objectif est de concevoir une application type réseau social comme Instagram, dans le but de travailler sur les problèmes de concurences, de passage à l'échelle et de stockage des données.
 
 ## Installation
 ```
