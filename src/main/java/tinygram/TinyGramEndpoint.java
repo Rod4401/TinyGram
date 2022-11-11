@@ -1,16 +1,12 @@
 package tinygram;
 
-import java.io.IOException;
 import java.util.Calendar;
-import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.google.api.client.http.MultipartContent;
-import com.google.api.client.http.MultipartContent.Part;
 import com.google.api.server.spi.auth.common.User;
 import com.google.api.server.spi.config.Api;
 import com.google.api.server.spi.config.ApiMethod;
@@ -74,7 +70,7 @@ import com.google.appengine.api.datastore.Transaction;
  *  Master 1 ALMA - Nantes Université
  *  
  *      Quentin     Gomes Dos Reis
- *      Rodrigue    Meunier         (Captain Rillette)
+ *      Rodrigue    Meunier         (Captain Rillettes)
  *      Valentin    Goubon
  */
 
@@ -745,7 +741,7 @@ public class TinyGramEndpoint {
      *      NOTE: It can only be called normally if signIn has already been called successfully once.
      */
     @ApiMethod(name = "postInfos", httpMethod = HttpMethod.GET)
-	public Entity postInfos(@Named("userID") String postID, User user) throws ForbiddenException, BadRequestException, UnauthorizedException, NotFoundException {
+	public Entity postInfos(@Named("postID") String postID, User user) throws ForbiddenException, BadRequestException, UnauthorizedException, NotFoundException {
 
         //  Provided user must be valid
         if(user == null) throw new UnauthorizedException("Invalid credentials !");
@@ -814,8 +810,10 @@ public class TinyGramEndpoint {
                                                                         FilterOperator.EQUAL,
                                                                         userKey));
 		PreparedQuery pq = datastore.prepare(query);
-        FetchOptions fo = FetchOptions.Builder.withLimit(25);
+        FetchOptions fo = FetchOptions.Builder.withLimit(1);
         if(pq.countEntities(fo) == 0) throw new UnauthorizedException("Unregistered: Please register before trying to fetch something !");
+
+        fo = FetchOptions.Builder.withLimit(25);
 
         //  No pointer, no problem
         if (cursorString != null) {
@@ -824,6 +822,67 @@ public class TinyGramEndpoint {
 
         //  Prepare query in order to fetch posts by date
         query = new Query("Post").addSort("date", SortDirection.DESCENDING);
+		pq = datastore.prepare(query);
+        
+        //  Get query result
+        QueryResultList<Entity> results = pq.asQueryResultList(fo);
+		cursorString = results.getCursor().toWebSafeString();
+
+		return CollectionResponse.<Entity>builder().setItems(results).setNextPageToken(cursorString).build();
+	}
+
+    /*
+     *  fetchUserPosts Method
+     *      
+     *      Used to get posts with paying attention to user.
+     * 
+     *      NOTE: It can only be called normally if signIn has already been called successfully once.
+     */
+    @ApiMethod(name = "fetchUserPosts", httpMethod = HttpMethod.GET)
+	public CollectionResponse<Entity> fetchUserPosts(User user, @Named("userID") String userID, @Nullable @Named("next") String cursorString) throws ForbiddenException, BadRequestException, UnauthorizedException, NotFoundException {
+
+        //  Provided user must be valid
+        if(user == null) throw new UnauthorizedException("Invalid credentials !");
+
+        //  Provided post id must be not null
+        if(userID == null) throw new BadRequestException("UserID is absent: either the userID doesn't exist or it is a mistake but the userID must be related to a valid and registered user !");
+
+        //  Might need to process a regex on userID
+        Pattern pattern = Pattern.compile("^[0-9]+$");
+        Matcher matcher = pattern.matcher(userID);
+        if(!matcher.matches()) throw new BadRequestException("UserID is invalid: either it is a mistake but the UserID must be related to a valid and registered user !");
+
+        Key userKey = KeyFactory.createKey("User", user.getId());
+        Key userRequestedKey = KeyFactory.createKey("User", userID);
+
+        DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+
+        //  Verify that the user is present in our datastore
+        Query query = new Query("User").setFilter(new FilterPredicate(Entity.KEY_RESERVED_PROPERTY,
+                                                                        FilterOperator.EQUAL,
+                                                                        userKey));
+        PreparedQuery pq = datastore.prepare(query);
+        FetchOptions fo = FetchOptions.Builder.withLimit(1);
+        if(pq.countEntities(fo) == 0) throw new UnauthorizedException("Unregistered: Please register before trying to fetch something !");
+
+        //  Verify that the requested user is present in our datastore
+        query = new Query("User").setFilter(new FilterPredicate(Entity.KEY_RESERVED_PROPERTY,
+                                                                FilterOperator.EQUAL,
+                                                                userRequestedKey));
+        pq = datastore.prepare(query);
+        Entity userRequested = pq.asSingleEntity();
+        if(userRequested == null) throw new NotFoundException("Not found: Please fetch a user that truely exist !");
+
+        fo = FetchOptions.Builder.withLimit(25);
+
+        //  No pointer, no problem
+        if (cursorString != null) {
+			fo.startCursor(Cursor.fromWebSafeString(cursorString));
+		}
+
+        //  Prepare query in order to fetch posts by date
+        query = new Query("Post").setFilter(new FilterPredicate("creatorID", FilterOperator.EQUAL, userID))
+                                .addSort("date", SortDirection.DESCENDING);
 		pq = datastore.prepare(query);
         
         //  Get query result
