@@ -1,0 +1,34 @@
+indexes:
+- kind: Friend 
+  properties: 
+    - name: account_id
+      direction: asc 
+    - name: pseudo 
+      direction: asc 
+
+- kind: Post 
+  properties: 
+    - name: userID
+      direction: asc
+    - name: postID
+      direction: asc 
+    - name: date
+      direction: desc 
+ 
+- kind: Like 
+  properties: 
+    - name: userID
+      direction: asc
+    - name: postID
+      direction: asc
+    - name: date
+      direction: desc
+
+- kind: Follow 
+  properties: 
+    - name: userID
+      direction: asc
+    - name: followedID
+      direction: asc
+    - name: date
+      direction: desc
