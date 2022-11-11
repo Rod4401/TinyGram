@@ -1,4 +1,17 @@
 /**
+ * URL bases
+ */
+const postRandomsUrl = "api/apiTinyGram/v1/fetchNewPostsGlobal";
+const likeUrl = "api/apiTinyGram/v1/likePost/";
+const isLikeUrl = "api/apiTinyGram/v1/likeState/";
+const followedUrl = "api/apiTinyGram/v1/followState/";
+const signInUrl = "api/apiTinyGram/v1/signIn";
+const connectUrl = "api/apiTinyGram/v1/connect";
+const userInfo = "api/apiTinyGram/v1/basicUserInfos/";
+const followUserUrl = "api/apiTinyGram/v1/followUser/";
+const postPublicationUrl = "api/apiTinyGram/v1/postPublication";
+
+/**
  * Function that allows to process the connection of a google client
  * @param {The "token" google} response
  */
@@ -23,21 +36,44 @@ var Connection = {
          * If the user is logged in, "disconnection" is displayed, otherwise the google sigin 
          */
         if(User.isLoged()) {
-            return m("button", {
-                        class: "btn material-icons unselectable",
-                        id: "iconUser",
-                        "data-bs-toggle": "dropdown",
-                        "aria-expanded": "false",
-                        type: "button",
-                        onclick: function() {
+            return m("li", {
+                class: "list-unstyled dropdown"
+              }, [
+                m("button", {
+                    class: "btn material-icons unselectable",
+                    id: "iconUser",
+                    "data-bs-toggle": "dropdown",
+                    "aria-expanded": "false",
+                    type: "button"
+                  },
+                  m("img", {
+                    class: "iconProfile",
+                    src: User
+                      .getUrl()
+                  })),
+                m("ul", {
+                  class: "dropdown-menu unselectable",
+                  "aria-labelledby": "navbarDropdownMenuLink"
+                }, [
+                  m("li",
+                    m("a", {
+                        class: "dropdown-item",
+                        onclick: function(){
                             MainView.changeView("profile");
                         }
-                    },
-                    m("img", {
-                        class: "iconProfile",
-                        src: User
-                            .getUrl()
-                    }))
+                      },
+                      "Mon profil"
+                    )
+                  ),
+                  m("li",
+                    m("a", {
+                        class: "dropdown-item"
+                      },
+                      "A propos"
+                    )
+                  )
+                ]),
+              ])
             
         } else {
             return m("button", {
@@ -67,21 +103,65 @@ var User = {
     listFollowers: [],
     //The list of the user's follows
     listFollows: [],
+    followers : 0,
+    follows : 0,
     
     /** 
     The init function is a setter of the response 
     * @param {response} response The response from google login
     */
     init: function(response, credential) {
-        this.response =
-            response;
-            this.credential = credential;
+        this.response = response;
+        this.credential = credential;
+        User.connect()
+    },
+
+    connect: function() {
+
+        return m.request({
+            method: "PUT",
+            url: connectUrl,
+            params: {access_token: User.getAccessToken()},
+        })
+        .then(function(result) {
+            Post.loadListRandom();
+             })
+        .catch(function(result) {
+                User.signIn();
+             })
+    },
+
+    signIn: function() {
+        const responsePayload = jwt_decode(User.getAccessToken());
+        return m.request({
+            method: "POST",
+            url: signInUrl,
+            params: {access_token: User.getAccessToken(), pseudo: responsePayload.given_name, fname: responsePayload.family_name, lname: responsePayload.given_name, pictureURL: responsePayload.picture},
+        })
+         .then(function(result) {
+            Post.loadListRandom();
+             })
+        .catch(function(result) {
+            window.alert("Erreur de connexion, veuillez réessayer");
+            })
     },
     
     /**
      *  The function allows to fill the lists 
      */
     loadLists: function() {
+        m.request({
+            method: "POST",
+            url : followedUrl + ":UserID",
+            params: {access_token : User.getAccessToken(), UserID: User.response.sub}
+        })
+        .then(function(result){
+            User.followers = result.properties.nbFollow
+        })
+
+
+
+
         return m.request({
                 method: "GET",
                 url: "url"
@@ -129,8 +209,7 @@ var User = {
      * @return {String} The user's access token
      */
     getAccessToken: function() {
-        return this.response
-            .credential;
+        return this.credential;
     },
     
     /**
@@ -173,16 +252,19 @@ var User = {
      * @param {User} user The user to follow
      */
     follow: function(user) {
-        
-    },
-    
-    /**
-     * Does user this follow user user?
-     * @param {User} user The user to be tested
-     * @return {bool} True if this follow user, false otherwise
-     */
-    isFollow: function(user) {
-        
+        return m.request({
+            method: "POST",
+            url: followUserUrl + ":idUser",
+            params: {idUser : user, access_token: User.getAccessToken()}
+        })
+        .then(function(result) {
+            Post.list.map(function(item){
+                if(item.properties.creatorID == user){
+                    item.properties.userHasFollowed = true
+                } 
+            })
+        }
+        )
     },
     
     showConnectView: function() {
@@ -210,16 +292,7 @@ var Post = {
     myList: [],
     //List of posts from people I follow
     followedList: [],
-    
-    /**
-     * The function that allows you to load my post 
-     * list and the post list (the most recent) 
-     * of the people I follow
-     */
-    loadLists: function() {
-        this.loadListFollowed();
-        this.loadListPerso();
-    },
+    cursor: "",
     
     /**
      * The function that allows you to load my post list
@@ -227,14 +300,16 @@ var Post = {
     loadListPerso: function() {
         return m.request({
                 method: "GET",
-                url: "_ah/api/myApi/v1/myPosts/0" + "?access_token=" + User.credential
+                url: "_ah/api/myApi/v1/myPosts/0" + "?access_token=" + User.getAccessToken()
             })
             .then(function(
                 result) {
                 Post.myList =
                     result
                     .items
-            })
+            },
+            this.connectLikes(Post.list),
+            )
     },
     
     /**
@@ -242,33 +317,55 @@ var Post = {
      * (the most recent) of people I don't follow
      */
     loadListRandom: function() {
-        return m.request({
-                method: "GET",
-                url: "_ah/api/myApi/v1/myPosts/0" + "?access_token=" + "eyJhbGciOiJSUzI1NiIsImtpZCI6ImVlMWI5Zjg4Y2ZlMzE1MWRkZDI4NGE2MWJmOGNlY2Y2NTliMTMwY2YiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL2FjY291bnRzLmdvb2dsZS5jb20iLCJuYmYiOjE2NjY0MzQyNTEsImF1ZCI6IjEzMjU4MDM4MjY3Ny1kZGhpbW44Yjh1YTZrY25hOGwwa21ucDdhNjV1MGljcC5hcHBzLmdvb2dsZXVzZXJjb250ZW50LmNvbSIsInN1YiI6IjEwODEzMjA4OTM3NDM1NTIxNTQ1OCIsImVtYWlsIjoibS5tZXVuaWVyLnJvZHJpZ3VlQGdtYWlsLmNvbSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJhenAiOiIxMzI1ODAzODI2NzctZGRoaW1uOGI4dWE2a2NuYThsMGttbnA3YTY1dTBpY3AuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJuYW1lIjoiUm9kcmlndWUgTWV1bmllciIsInBpY3R1cmUiOiJodHRwczovL2xoMy5nb29nbGV1c2VyY29udGVudC5jb20vYS9BTG01d3UxOUxDclN2YmNyYm5UUEx6NmpveXQzZGx5LWZfTGZCd1F4RW5DOGlBPXM5Ni1jIiwiZ2l2ZW5fbmFtZSI6IlJvZHJpZ3VlIiwiZmFtaWx5X25hbWUiOiJNZXVuaWVyIiwiaWF0IjoxNjY2NDM0NTUxLCJleHAiOjE2NjY0MzgxNTEsImp0aSI6IjRlMDcyNDUzMDhmOWM3YTkzMDJhYjA1YzE0ZDk3ZmFhMDMyYThkNWYifQ.oz4yhRntO8O2rf-ebjZ_BkT0NsaXmzmOgpU3zHodpj72eUnfrIec-1MGj_9hQ9KtSFu-yF65adVXuJfpCiUCN_qni5tnqTARzWLMeTb6myAA5vrSSQGUFIOn06umGV77qr3afidSLnjzTkiZdmPdfVyR_cBFnCV-l5Q2OkRrijncRg5Eyw8kqNy-VgtdnwPa8yLyf38VoVA3oZPdlO1Y_t-_KMXReAwSD9YDSmdeM4vXeXqoo-SwyzBlh4KaIha5B3gBRF6YqfKO4eS3FnTpQHtxWuWi4K-W3spuLu3rYrY-RVxYh8hLo6VTo7Bd3s_l7aHIwAEIh4GsmgthesXb0Q"
-            })
-            .then(function(
-                result) {
-                Post.list =
-                    result
-                    .items
-            })
+        this.chargerSuivants()
     },
-    
-    /**
-     * The function that allows you to load the list of posts 
-     * (the most recent) of the people I follow
-     */
-    loadListFollowed: function() {
+
+    chargerSuivants: function(){
         return m.request({
+            method: "GET",
+            url: postRandomsUrl,
+            params: {access_token: User.getAccessToken(), cursor: Post.cursor}
+        })
+        .then(function(
+            result) {
+            Post.list.push.apply(Post.list,result.items),
+            Post.connectLikes(Post.list),
+            Post.connectUser(Post.list),
+            Post.cursor = result.nextPageToken
+        })
+    },
+
+    connectLikes: function(list){
+        list.map(function(item) {
+            //The likes 
+            m.request({
                 method: "GET",
-                url: "url"
+                url: isLikeUrl + ":id",
+                params: {id: item.key.name, access_token: User.getAccessToken()}
             })
             .then(function(
                 result) {
-                Post.followedList =
-                    result
-                    .items
+                    item.properties.likes = result.properties.nbLikes;
+                    item.properties.like = result.properties.userHasLiked;
+                })
+        })
+    },
+
+    connectUser: function(list){
+        list.map(function(item) {
+            //The users infos
+            m.request({
+                method: "GET",
+                url: userInfo + ":UserID",
+                params: {UserID: item.properties.creatorID, access_token: User.getAccessToken()}
             })
+            .then(function(
+                result) {
+                    item.properties.creatorURL = result.properties.pictureUrl;
+                    item.properties.creatorPseudo = result.properties.pseudo;
+                    item.properties.userHasFollowed = result.properties.userHasFollowed;
+                })
+        })
     },
     
     /**
@@ -278,16 +375,20 @@ var Post = {
     like: function(post) {
         if(User.isLoged()) {
             //console.log("Je like : " + post);
+            if(!post.properties.like){
             return m.request({
-                    method: "PUT",
-                    url: "url"
+                    method: "POST",
+                    url: likeUrl + ":postId",
+                    params: {postId : post.key.name , access_token: User.getAccessToken()}
                 })
                 .then(function(
                     result
                 ) {
-                    post.like =
+                    post.properties.like =
                         true;
+                    post.properties.likes ++;
                 })
+            }
         } else {
             //We could make a popup that invites us to connect
             //console.log("User not logged");
@@ -328,7 +429,12 @@ var MainView = {
                 view) {
                 this.type = view
             }
-            Post.loadLists();
+            if(view == "profile"){
+                Post.loadListPerso();
+            } else {
+                Post.loadListRandom();
+            }
+            
         }
     }
     
@@ -399,12 +505,12 @@ var ProfileView = {
                                         [m("span", {
                                                     class: "me-4"
                                                 },
-                                                "X followers"
+                                                User.followers + " followers"
                                             ),
                                             m("span", {
                                                     class: "me-4"
                                                 },
-                                                "X suivi(e)s"
+                                                User.follows + " suivi(e)s"
                                             )
                                         ]
                                     )
@@ -480,25 +586,6 @@ var ProfileView = {
                                 )
                             ]
                         )
-                    ]
-                ),
-                m("div", {
-                        class: "form-outline mt-2 mb-2"
-                    },
-                    [
-                        m("input", {
-                            "oninput": function() {
-                                ProfileView
-                                    .search(
-                                        this
-                                        .value
-                                    )
-                            },
-                            type: "search",
-                            class: "form-control",
-                            placeholder: "Rechercher",
-                            "aria-label": "Search"
-                        }),
                     ]
                 ),
                 m("div", {
@@ -616,7 +703,6 @@ var ProfileView = {
  * The component that manages the post view
  */
 var PostView = {
-    oninit: Post.loadListRandom(),
     
     /**
      * Function that returns to the top of page
@@ -641,12 +727,12 @@ var PostView = {
                     return m(
                         'div', {
                             class: "border rounded row row-cols-1 mt-2 bg-white",
-                            id: "IDDUPOST"
+                            id: item.key.name,
                         },
                         [
                             // ENTETE
                             m('div', {
-                                    class: "mt-2 border-bottom col"
+                                    class: "mt-2 ps-0 border-bottom col"
                                 },
                                 [
                                     m('div', {
@@ -664,26 +750,33 @@ var PostView = {
                                                             class: "iconProfile unselectable",
                                                             onclick: function() {
                                                                 User.follow(
-                                                                    "IDEMMETEUR"
+                                                                    item.properties.creatorID,
                                                                 )
                                                             },
-                                                            src: "LELIEN"
+                                                            src: item.properties.creatorURL
                                                         })
                                                     ),
                                                     m('div', {
                                                             class: "col-2"
                                                         },
-                                                        m('p', {
-                                                                class: "fw-bold",
-                                                                onclick: function() {
-                                                                    User.follow(
-                                                                        "IDEMMETEUR"
-                                                                    )
-                                                                }
-                                                            },
-                                                            "LEPSEUDO"
-                                                        )
+                                                        m('p',item.properties.creatorPseudo)
                                                     ),
+                                                    m('div', {
+                                                        class: "col-4"
+                                                    },
+                                                    item.properties.creatorID != User.response.sub && item.properties.userHasFollowed == false ?
+                                                    (m('p', {
+                                                            class: "pt-0 text-primary",
+                                                            style: "cursor: pointer;",
+                                                            onclick: function() {
+                                                                User.follow(
+                                                                    item.properties.creatorID
+                                                                )
+                                                            }
+                                                        },
+                                                        "• Suivre"
+                                                    )):"",
+                                                ),
                                                 ]
                                             ),
                                         ]
@@ -698,7 +791,7 @@ var PostView = {
                                 [
                                     m('img', {
                                         class: "w-100 unselectable",
-                                        src: item.properties.url
+                                        src: item.properties.pictureUrl
                                     }),
                                 ]
                             ),
@@ -713,19 +806,19 @@ var PostView = {
                                         },
                                         [
                                             m('div', {
-                                                    class: "col-1"
+                                                    class: "col-1 ps-0"
                                                 },
                                                 [
                                                     m('span', {
-                                                            class: "material-icons unselectable",
-                                                            style: "margin-left:0;margin-right:0;",
+                                                            class: "material-icons unselectable ms-2",
+                                                            style: item.properties.like == true ? "margin-left:0;margin-right:0; color:red;":"margin-left:0;margin-right:0;",
                                                             onclick: function() {
                                                                 Post.like(
-                                                                    item
+                                                                    item,
                                                                 )
                                                             }
                                                         },
-                                                        "favorite_border"
+                                                        item.properties.like == true ? "favorite" : "favorite_border",
                                                     ),
                                                 ]
                                             ),
@@ -736,7 +829,7 @@ var PostView = {
                                                     m('p', {
                                                             class: "fw-bold text-end"
                                                         },
-                                                        "LE NOMBRE DE LIKES"
+                                                        item.properties.likes + " Likes"
                                                     ),
                                                 ]
                                             ),
@@ -747,12 +840,24 @@ var PostView = {
                             
                             // DESCRIPTION
                             m('div',
-                                item.properties.description
+                                item.properties.body
                             ),
                             
                         ]
                     )
-                })
+                }),
+                m("div", {"class":"border rounded row row-cols-1 mt-2 bg-white"}, 
+                    m("div", {"class":"d-flex justify-content-center"}, 
+                        m("button", {
+                            "class":"btn",
+                            onclick: function(){
+                                Post.chargerSuivants();
+                            }
+                        }, 
+                        "Suivant"
+                        )
+                    )
+                )
         ]))
     }
 }
@@ -761,11 +866,14 @@ var PostView = {
  * The component that allows you to manage the div to create a post
  */
 var NewPost = {
+    url:"",
+    body:"",
     isShow: false,
     view: function() {
         if(this.isShow ==
             true) {
-            //return ce que valou à fait !
+                this.url = "";
+        this.body = "";
             return m("div", {"id":"newPost"},
             [
               m("div", {"class":"fondTransparent",onclick: function() {
@@ -774,31 +882,31 @@ var NewPost = {
               m("div", {"class":"overlayDiv centered rounded onTop bg-light"},
                 [
                   m("div", {"class":"centered-width"}, 
-                    m("p", {"class":"text-justify fw-bold"}, 
+                    m("p", {"class":"text-justify fw-bold", style:"font-family: 'Dancing Script';font-size: 25;"}, 
                       "Créer une publication"
                     )
                   ),
                   m("div", {"class":"row overlayContainer centered"},
                     [
                       m("div", {"class":"col-8 bg-body border","id":"url"}, 
-                        m("textarea", {"class":"form-control textArea","rows":"8","placeholder":"Saisir une url..."})
+                        m("textarea", {"class":"form-control textArea","rows":"8","placeholder":"Saisir une url...",oninput: function(e) {NewPost.url = e.target.value}})
                       ),
                       m("div", {"class":"col-4 bg-body border","id":"infos"}, 
                         m("div", {"class":"row row-cols-1"},
                           [
-                            m("div", {"class":"col mt-2","id":"sender"},
+                            m("div", {"class":"col mt-2 d-flex align-items-center","id":"sender"},
                               [
                                 m("img", {"class":"iconProfile","src":User.response.picture}),
-                                m("h3", {"class":"fw-bold"}, 
+                                m("h4", {"class":"fw-bold ms-2"}, 
                                   User.response.given_name
                                 )
                               ]
                             ),
                             m("div", {"class":"col mt-1","id":"description"}, 
-                              m("textarea", {"class":"form-control textArea","id":"textAreaDescription","rows":"8","placeholder":"Ajoutez une légende..."})
+                              m("textarea", {"class":"form-control textArea","id":"textAreaDescription","rows":"8","placeholder":"Ajoutez une légende...",oninput: function(e) {NewPost.body = e.target.value}})
                             ),
                             m("div", {"class":"col mt-1","id":"send","style":{"text-align":"end"}}, 
-                              m("a", {"class":"text-decoration-none",onclick : function(){
+                              m("button", {"class":"btn border",onclick : function(){
                                   NewPost.post();
                               }}, 
                                 "Partager"
@@ -837,8 +945,9 @@ var NewPost = {
 
     post: function(){
         return m.request({
-            method: "GET",
-            url: "_ah/api/myApi/v1/url" + "?access_token" + User.credential 
+            method: "POST",
+            url: postPublicationUrl,
+            params: {access_token: User.getAccessToken(), pictureURL : NewPost.url, body : NewPost.body}
         })
         .then(function(result) {
             //Post ajouté
