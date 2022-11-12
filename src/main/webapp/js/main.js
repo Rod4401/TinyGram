@@ -1224,7 +1224,7 @@ var NewPost = {
                                 m("p", {
                                         "class": "text-justify fw-bold",
                                         "style": {
-                                            "font-family": "&quot",
+                                            "font-family": "Dancing Script",
                                             "font-size": "25px"
                                         }
                                     },
