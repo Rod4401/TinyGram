@@ -130,8 +130,8 @@ public class TinyGramEndpoint {
         if(userInfos.pictureURL == null || userInfos.pictureURL.isEmpty()) throw new BadRequestException("Invalid profile picture URL: URL cannot be null or empty !");
 
         //  Avoid too long informations
-        if(userInfos.pseudo.length() >= 16) throw new BadRequestException("User informations too long: Pseudonym might be too long !");
-        if(userInfos.fname.length() >= 50 || userInfos.lname.length() >= 50) throw new BadRequestException("User informations too long: firstName or lastName might be too long !");
+        if(userInfos.pseudo.length() > 24) throw new BadRequestException("User informations too long: Pseudonym might be too long !");
+        if(userInfos.fname.length() > 50 || userInfos.lname.length() > 50) throw new BadRequestException("User informations too long: firstName or lastName might be too long !");
 
         //  Check if the provided picture profile URL is from google
         Pattern pattern = Pattern.compile("^https:\\/\\/lh[0-9]\\.googleusercontent\\.com\\/a\\/[a-zA-Z0-9]+=.*$");
