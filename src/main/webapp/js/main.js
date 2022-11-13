@@ -19,6 +19,9 @@ const followUserUrl =
     "api/apiTinyGram/v1/followUser/";
 const postPublicationUrl =
     "api/apiTinyGram/v1/postPublication";
+const postUserUrl = 
+    "api/apiTinyGram/v1/fetchUserPosts/";
+
 
 /**
  * Function that allows to process the connection of a google client
@@ -31,7 +34,6 @@ function connect(response) {
     User.init(responsePayload, response
         .credential);
     m.redraw();
-
 }
 
 /**
@@ -210,7 +212,7 @@ var User = {
     /**
      *  The function allows to fill the lists 
      */
-    loadLists: function() {
+    loadFollowersNumbers: function() {
         m.request({
                 method: "POST",
                 url: followedUrl +
@@ -219,8 +221,7 @@ var User = {
                     access_token: User
                         .getAccessToken(),
                     UserID: User
-                        .response
-                        .sub
+                        .getID()
                 }
             })
             .then(function(
@@ -229,50 +230,6 @@ var User = {
                     result
                     .properties
                     .nbFollow
-            })
-
-
-
-
-        return m.request({
-                method: "GET",
-                url: "url"
-            })
-            .then(function(
-                result) {
-                //this.listFollowers = result.followers.items;
-                //this.listFollows = result.follows.items;
-                this.listFollowers =
-                    this
-                    .listFollowers
-                    .sort(
-                        function(
-                            a,
-                            b
-                        ) {
-                            return a
-                                .localeCompare(
-                                    b
-                                )
-                        });
-                this.listFollows =
-                    this
-                    .listFollows
-                    .sort(
-                        function(
-                            a,
-                            b
-                        ) {
-                            return a
-                                .localeCompare(
-                                    b
-                                )
-                        });
-                User.listView = [
-                    ...
-                    this
-                    .listFollowers
-                ];
             })
     },
 
@@ -292,6 +249,16 @@ var User = {
         return this.response
             .picture;
     },
+
+    /**
+     * Function that returns the user's id
+     * @return {String} The user's id
+     */
+    getID: function() {
+        return this.response
+            .sub;
+    },
+
 
     /**
      * Function that returns the user's name
@@ -387,21 +354,27 @@ var Post = {
     loadListPerso: function() {
         return m.request({
                 method: "GET",
-                url: "_ah/api/myApi/v1/myPosts/0" +
-                    "?access_token=" +
-                    User
-                    .getAccessToken()
+                url: postUserUrl + ":idUser",
+                params: {idUser: User.getID(), access_token: User.getAccessToken()}
             })
-            .then(function(
-                    result) {
-                    Post.myList =
-                        result
-                        .items
+            .then(function(result) {
+                        Post.myList = result.items,
+                        Post.connectLikes(Post.myList),
+                        User.loadFollowersNumbers()
                 },
-                this
-                .connectLikes(
-                    Post.list),
+                
             )
+    },
+
+     /**
+     * The function that allows you to load the list of posts 
+     * (the most recent) of people I don't follow
+     * Restart the cursor (is reload)
+     */
+    reload: function(){
+        Post.cursor = "",
+        Post.list = [],
+        Post.loadListRandom()
     },
 
     /**
@@ -419,7 +392,7 @@ var Post = {
                 params: {
                     access_token: User
                         .getAccessToken(),
-                    cursor: Post
+                    next: Post
                         .cursor
                 }
             })
@@ -732,7 +705,7 @@ var ProfileView = {
                 class: "col-lg-4 mb-2 mt-3 bg-light offset-lg-2 h-25"
             }, [
                 m("div", {
-                        class: "container"
+                        class: "container pb-2 border-bottom"
                     },
                     m("div", {
                             class: "row"
@@ -772,13 +745,6 @@ var ProfileView = {
                                                 User
                                                 .followers +
                                                 " followers"
-                                            ),
-                                            m("span", {
-                                                    class: "me-4"
-                                                },
-                                                User
-                                                .follows +
-                                                " suivi(e)s"
                                             )
                                         ]
                                     )
@@ -786,75 +752,6 @@ var ProfileView = {
                             )
                         ]
                     )
-                ),
-                m("div", {
-                        class: "border-top d-flex justify-content-center"
-                    },
-                    [
-                        m("button", {
-                                type: "button",
-                                id: "followers",
-                                onclick: function() {
-                                    ProfileView
-                                        .changeView(
-                                            'followers'
-                                        );
-                                },
-                                class: (
-                                    ProfileView
-                                    .type ==
-                                    "followers" ?
-                                    ProfileView
-                                    .active :
-                                    ProfileView
-                                    .passive
-                                ),
-
-                            },
-                            [m("span", {
-                                        class: "material-icons ms-0"
-                                    },
-                                    "groups"
-                                ),
-                                m("span", {
-                                        class: "ms-2"
-                                    },
-                                    "Followers"
-                                )
-                            ]
-                        ),
-                        m("button", {
-                                type: "button",
-                                id: "follows",
-                                onclick: function() {
-                                    ProfileView
-                                        .changeView(
-                                            'follows'
-                                        )
-                                },
-                                class: (
-                                    ProfileView
-                                    .type ==
-                                    "follows" ?
-                                    ProfileView
-                                    .active :
-                                    ProfileView
-                                    .passive
-                                )
-                            },
-                            [m("span", {
-                                        class: "material-icons ms-0"
-                                    },
-                                    "people_alt"
-                                ),
-                                m("span", {
-                                        class: "ms-2"
-                                    },
-                                    "Follows"
-                                )
-                            ]
-                        )
-                    ]
                 ),
                 m("div", {
                         class: "rounded h-100"
@@ -895,40 +792,95 @@ var ProfileView = {
                                 function(
                                     item
                                 ) {
-                                    return m(
-                                        "div", {
-                                            class: "col-4 postsProfilePicture"
-                                        },
-                                        m("div", {
-                                                class: "container"
-                                            },
-                                            [
-                                                m("div", {
-                                                        class: "d-flex align-items-center justify-content-center"
-                                                    },
-                                                    [
-                                                        m("img", {
-                                                            width: "100%",
-                                                            height: "100%",
-                                                            src: item
-                                                                .properties
-                                                                .url,
-                                                            class: "card unPost"
-                                                        }),
-                                                        m("div", {
-                                                                class: "hide likeStyle text-white",
-                                                                width: "100%"
-                                                            },
-                                                            "0" +
-                                                            "♡"
-                                                        )
-                                                    ]
-                                                )
+                                   
+                    return m(
+                        'div', {
+                            class: "border rounded row row-cols-1 mt-2 bg-white",
+                            id: item
+                                .key
+                                .name,
+                        },
+                        [
+                            //IMAGE
+                            m('div', {
+                                    class: "border-bottom mt-2",
+                                    style: "padding-left:0;padding-right:0;"
+                                },
+                                [
+                                    m('img', {
+                                        class: "w-100 unselectable",
+                                        src: item
+                                            .properties
+                                            .pictureUrl
+                                    }),
+                                ]
+                            ),
 
-                                            ]
-                                        )
-                                    )
-                                }
+                            //LIKE
+                            m('div', {
+                                    class: "container"
+                                },
+                                [
+                                    m('div', {
+                                            class: "row"
+                                        },
+                                        [
+                                            m('div', {
+                                                    class: "col-1 ps-0"
+                                                },
+                                                [
+                                                    m('span', {
+                                                            class: "material-icons unselectable ms-2",
+                                                            style: item
+                                                                .properties
+                                                                .like ==
+                                                                true ?
+                                                                "margin-left:0;margin-right:0; color:red;" :
+                                                                "margin-left:0;margin-right:0;",
+                                                            onclick: function() {
+                                                                Post.like(
+                                                                    item,
+                                                                )
+                                                            }
+                                                        },
+                                                        item
+                                                        .properties
+                                                        .like ==
+                                                        true ?
+                                                        "favorite" :
+                                                        "favorite_border",
+                                                    ),
+                                                ]
+                                            ),
+                                            m('div', {
+                                                    class: "col-4 offset-7"
+                                                },
+                                                [
+                                                    m('p', {
+                                                            class: "fw-bold text-end"
+                                                        },
+                                                        item
+                                                        .properties
+                                                        .likes +
+                                                        " Likes"
+                                                    ),
+                                                ]
+                                            ),
+                                        ]
+                                    ),
+                                ]
+                            ),
+
+                            // DESCRIPTION
+                            m('div',
+                                item
+                                .properties
+                                .body
+                            ),
+
+                        ]
+                    )
+                }
                             )
                         ]
                     )
@@ -1052,8 +1004,7 @@ var PostView = {
                                                             .properties
                                                             .creatorID !=
                                                             User
-                                                            .response
-                                                            .sub &&
+                                                            .getID() &&
                                                             item
                                                             .properties
                                                             .userHasFollowed ==
@@ -1415,6 +1366,10 @@ var NewPost = {
         m.redraw();
     },
 
+    /**
+     * The function that post the post
+     * It called after the user click on "Partager"
+     */
     post: function() {
         //Post ajouté
         NewPost.hide();
@@ -1432,7 +1387,7 @@ var NewPost = {
             })
             .then(function(
                 result) {
-
+                    Post.reload();
             })
     }
 
