@@ -1,17 +1,8 @@
 indexes:
-- kind: Friend 
-  properties: 
-    - name: account_id
-      direction: asc 
-    - name: pseudo 
-      direction: asc 
-
 - kind: Post 
   properties: 
-    - name: userID
+    - name: creatorID
       direction: asc
-    - name: postID
-      direction: asc 
     - name: date
       direction: desc 
  
