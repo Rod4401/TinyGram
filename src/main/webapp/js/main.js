@@ -19,10 +19,17 @@ const followUserUrl =
     "api/apiTinyGram/v1/followUser/";
 const postPublicationUrl =
     "api/apiTinyGram/v1/postPublication";
-const postUserUrl = 
+const postUserUrl =
     "api/apiTinyGram/v1/fetchUserPosts/";
 
-
+/**
+ * Options for the date format
+ */
+let options = {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+};
 /**
  * Function that allows to process the connection of a google client
  * @param {The "token" google} response
@@ -74,7 +81,7 @@ var Connection = {
                                     MainView
                                         .changeView(
                                             "profile"
-                                            );
+                                        );
                                 }
                             },
                             "Mon profil"
@@ -87,7 +94,7 @@ var Connection = {
                                     MainView
                                         .changeView(
                                             "apropos"
-                                            );
+                                        );
                                 }
                             },
                             "A propos"
@@ -105,7 +112,7 @@ var Connection = {
                     type: "button",
                     onclick: function() {
                         User
-                    .showConnectView();
+                            .showConnectView();
                     }
                 },
                 "account_circle"
@@ -135,7 +142,7 @@ var User = {
     init: function(response,
         credential) {
         this.response =
-        response;
+            response;
         this.credential =
             credential;
         User.connect()
@@ -154,12 +161,12 @@ var User = {
             .then(function(
                 result) {
                 Post
-            .loadListRandom();
+                    .loadListRandom();
             })
             .catch(function(
                 result) {
                 User
-            .signIn();
+                    .signIn();
             })
     },
 
@@ -167,7 +174,7 @@ var User = {
         const responsePayload =
             jwt_decode(User
                 .getAccessToken()
-                );
+            );
         const lname =
             responsePayload
             .family_name ===
@@ -180,7 +187,8 @@ var User = {
             undefined ?
             responsePayload
             .email.split("@")[
-            0] : responsePayload
+                0] :
+            responsePayload
             .given_name;
         return m.request({
                 method: "POST",
@@ -198,14 +206,14 @@ var User = {
             .then(function(
                 result) {
                 Post
-            .loadListRandom();
+                    .loadListRandom();
             })
             .catch(function(
                 result) {
                 window
                     .alert(
                         "Erreur de connexion, veuillez réessayer"
-                        );
+                    );
             })
     },
 
@@ -214,7 +222,7 @@ var User = {
      */
     loadFollowersNumbers: function() {
         m.request({
-                method: "POST",
+                method: "GET",
                 url: followedUrl +
                     ":UserID",
                 params: {
@@ -307,12 +315,12 @@ var User = {
                     .map(
                         function(
                             item
-                            ) {
+                        ) {
                             if(item
                                 .properties
                                 .creatorID ==
                                 user
-                                ) {
+                            ) {
                                 item.properties
                                     .userHasFollowed =
                                     true
@@ -354,27 +362,42 @@ var Post = {
     loadListPerso: function() {
         return m.request({
                 method: "GET",
-                url: postUserUrl + ":idUser",
-                params: {idUser: User.getID(), access_token: User.getAccessToken()}
+                url: postUserUrl +
+                    ":idUser",
+                params: {
+                    idUser: User
+                        .getID(),
+                    access_token: User
+                        .getAccessToken()
+                }
             })
-            .then(function(result) {
-                        Post.myList = result.items,
-                        Post.connectLikes(Post.myList),
-                        User.loadFollowersNumbers()
+            .then(function(
+                    result) {
+                    Post.myList =
+                        result
+                        .items,
+                        Post
+                        .connectLikes(
+                            Post
+                            .myList
+                            ),
+                        User
+                        .loadFollowersNumbers()
                 },
-                
+
             )
     },
 
-     /**
+    /**
      * The function that allows you to load the list of posts 
      * (the most recent) of people I don't follow
      * Restart the cursor (is reload)
      */
-    reload: function(){
+    reload: function() {
         Post.cursor = "",
-        Post.list = [],
-        Post.loadListRandom()
+            Post.list = [],
+            Post
+            .loadListRandom()
     },
 
     /**
@@ -405,17 +428,17 @@ var Post = {
                         .list,
                         result
                         .items
-                        ),
+                    ),
                     Post
                     .connectLikes(
                         Post
                         .list
-                        ),
+                    ),
                     Post
                     .connectUser(
                         Post
                         .list
-                        ),
+                    ),
                     Post
                     .cursor =
                     result
@@ -425,7 +448,7 @@ var Post = {
 
     connectLikes: function(list) {
         list.map(function(
-        item) {
+            item) {
             //The likes 
             m.request({
                     method: "GET",
@@ -442,7 +465,7 @@ var Post = {
                 .then(
                     function(
                         result
-                        ) {
+                    ) {
                         item.properties
                             .likes =
                             result
@@ -459,7 +482,7 @@ var Post = {
 
     connectUser: function(list) {
         list.map(function(
-        item) {
+            item) {
             //The users infos
             m.request({
                     method: "GET",
@@ -476,7 +499,7 @@ var Post = {
                 .then(
                     function(
                         result
-                        ) {
+                    ) {
                         item.properties
                             .creatorURL =
                             result
@@ -525,7 +548,7 @@ var Post = {
                     .then(
                         function(
                             result
-                            ) {
+                        ) {
                             post.properties
                                 .likes++;
                         })
@@ -573,10 +596,10 @@ var MainView = {
             if(view ==
                 "profile") {
                 Post
-            .loadListPerso();
+                    .loadListPerso();
             } else {
                 Post
-            .loadListRandom();
+                    .loadListRandom();
             }
 
         }
@@ -740,13 +763,12 @@ var ProfileView = {
                                             class: "h-50 align-items-right d-flex"
                                         },
                                         [m("span", {
-                                                    class: "me-4"
-                                                },
-                                                User
-                                                .followers +
-                                                " followers"
-                                            )
-                                        ]
+                                                class: "me-4"
+                                            },
+                                            User
+                                            .followers +
+                                            " followers"
+                                        )]
                                     )
                                 ]
                             )
@@ -792,95 +814,115 @@ var ProfileView = {
                                 function(
                                     item
                                 ) {
-                                   
-                    return m(
-                        'div', {
-                            class: "border rounded row row-cols-1 mt-2 bg-white",
-                            id: item
-                                .key
-                                .name,
-                        },
-                        [
-                            //IMAGE
-                            m('div', {
-                                    class: "border-bottom mt-2",
-                                    style: "padding-left:0;padding-right:0;"
-                                },
-                                [
-                                    m('img', {
-                                        class: "w-100 unselectable",
-                                        src: item
-                                            .properties
-                                            .pictureUrl
-                                    }),
-                                ]
-                            ),
 
-                            //LIKE
-                            m('div', {
-                                    class: "container"
-                                },
-                                [
-                                    m('div', {
-                                            class: "row"
+                                    return m(
+                                        'div', {
+                                            class: "border rounded row row-cols-1 mt-2 bg-white",
+                                            id: item
+                                                .key
+                                                .name,
                                         },
                                         [
+                                            //IMAGE
                                             m('div', {
-                                                    class: "col-1 ps-0"
+                                                    class: "border-bottom mt-2",
+                                                    style: "padding-left:0;padding-right:0;"
                                                 },
                                                 [
-                                                    m('span', {
-                                                            class: "material-icons unselectable ms-2",
-                                                            style: item
-                                                                .properties
-                                                                .like ==
-                                                                true ?
-                                                                "margin-left:0;margin-right:0; color:red;" :
-                                                                "margin-left:0;margin-right:0;",
-                                                            onclick: function() {
-                                                                Post.like(
-                                                                    item,
-                                                                )
-                                                            }
+                                                    m('img', {
+                                                        class: "w-100 unselectable",
+                                                        src: item
+                                                            .properties
+                                                            .pictureUrl
+                                                    }),
+                                                ]
+                                            ),
+
+                                            //LIKE
+                                            m('div', {
+                                                    class: "container mt-1"
+                                                },
+                                                [
+                                                    m('div', {
+                                                            class: "row"
                                                         },
-                                                        item
-                                                        .properties
-                                                        .like ==
-                                                        true ?
-                                                        "favorite" :
-                                                        "favorite_border",
+                                                        [
+                                                            m('div', {
+                                                                    class: "col-1 ps-0"
+                                                                },
+                                                                [
+                                                                    m('span', {
+                                                                            class: "material-icons unselectable ms-2",
+                                                                            style: item
+                                                                                .properties
+                                                                                .like ==
+                                                                                true ?
+                                                                                "margin-left:0;margin-right:0; color:red;" :
+                                                                                "margin-left:0;margin-right:0;",
+                                                                            onclick: function() {
+                                                                                Post.like(
+                                                                                    item,
+                                                                                )
+                                                                            }
+                                                                        },
+                                                                        item
+                                                                        .properties
+                                                                        .like ==
+                                                                        true ?
+                                                                        "favorite" :
+                                                                        "favorite_border",
+                                                                    ),
+                                                                ]
+                                                            ),
+                                                            m('div', {
+                                                                    class: "col-4 offset-7"
+                                                                },
+                                                                [
+                                                                    m('p', {
+                                                                            class: "fw-bold text-end"
+                                                                        },
+                                                                        item
+                                                                        .properties
+                                                                        .likes +
+                                                                        " Likes"
+                                                                    ),
+                                                                ]
+                                                            ),
+                                                        ]
                                                     ),
                                                 ]
                                             ),
-                                            m('div', {
-                                                    class: "col-4 offset-7"
-                                                },
+
+                                            // DESCRIPTION
+                                            m('div',
                                                 [
+                                                    m('h6', {
+                                                            class: "text-break mb-0 lead",
+                                                            style: "font-size:15;"
+                                                        },
+                                                        new Date(
+                                                            item
+                                                            .properties
+                                                            .date
+                                                            )
+                                                        .toLocaleDateString(
+                                                            "fr-FR",
+                                                            options
+                                                            )
+                                                        ),
                                                     m('p', {
-                                                            class: "fw-bold text-end"
+                                                            class: "text-break"
                                                         },
                                                         item
                                                         .properties
-                                                        .likes +
-                                                        " Likes"
-                                                    ),
+                                                        .body
+                                                        )
                                                 ]
                                             ),
+
                                         ]
-                                    ),
-                                ]
-                            ),
-
-                            // DESCRIPTION
-                            m('div',
-                                item
-                                .properties
-                                .body
-                            ),
-
-                        ]
-                    )
-                }
+                                    )
+                                }
                             )
                         ]
                     )
@@ -950,7 +992,7 @@ var PostView = {
             .map(
                 function(
                     item
-                    ) {
+                ) {
                     return m(
                         'div', {
                             class: "border rounded row row-cols-1 mt-2 bg-white",
@@ -965,7 +1007,7 @@ var PostView = {
                                 },
                                 [
                                     m('div', {
-                                            class: "container md-2"
+                                            class: "container mb-1"
                                         },
                                         [
                                             m('div', {
@@ -998,7 +1040,7 @@ var PostView = {
                                                                 item
                                                                 .properties
                                                                 .creatorPseudo
-                                                                ),
+                                                            ),
 
                                                             item
                                                             .properties
@@ -1024,7 +1066,7 @@ var PostView = {
                                                             )) :
                                                             "",
                                                         ]
-                                                        )
+                                                    )
                                                 ]
                                             ),
                                         ]
@@ -1048,7 +1090,7 @@ var PostView = {
 
                             //LIKE
                             m('div', {
-                                    class: "container"
+                                    class: "container mt-1"
                                 },
                                 [
                                     m('div', {
@@ -1103,9 +1145,29 @@ var PostView = {
 
                             // DESCRIPTION
                             m('div',
-                                item
-                                .properties
-                                .body
+                                [
+                                    m('h6', {
+                                            class: "text-break mb-0 lead",
+                                            style: "font-size:15;"
+                                        },
+                                        new Date(
+                                            item
+                                            .properties
+                                            .date
+                                            )
+                                        .toLocaleDateString(
+                                            "fr-FR",
+                                            options
+                                            )
+                                        ),
+                                    m('p', {
+                                            class: "text-break"
+                                        },
+                                        item
+                                        .properties
+                                        .body
+                                        )
+                                ]
                             ),
 
                         ]
@@ -1125,7 +1187,7 @@ var PostView = {
                             "class": "btn",
                             onclick: function() {
                                 Post
-                            .chargerSuivants();
+                                    .chargerSuivants();
                             }
                         },
                         "Suivant"
@@ -1225,7 +1287,7 @@ var NewPost = {
                                                                     .search(
                                                                         this
                                                                         .value
-                                                                        )
+                                                                    )
                                                             },
                                                             "class": "form-control",
                                                             "type": "text",
@@ -1248,7 +1310,7 @@ var NewPost = {
                                                         .map(
                                                             function(
                                                                 item
-                                                                ) {
+                                                            ) {
                                                                 return m(
                                                                     "div", {
                                                                         "class": "col-3 p-0"
@@ -1267,9 +1329,9 @@ var NewPost = {
                                                                     })
                                                                 )
                                                             }
-                                                            )
+                                                        )
                                                     ]
-                                                    )
+                                                )
                                             )
                                         ]
                                     ),
@@ -1387,7 +1449,8 @@ var NewPost = {
             })
             .then(function(
                 result) {
-                    Post.reload();
+                Post
+            .reload();
             })
     }
 
@@ -1396,7 +1459,7 @@ var NewPost = {
 //GIF
 // url Async requesting function
 function httpGetAsync(theUrl,
-callback) {
+    callback) {
     // create the request object
     var xmlHttp = new XMLHttpRequest();
 
@@ -1435,12 +1498,12 @@ function tenorCallback_search(
 
     // load the GIFs -- for our example we will load the first GIFs preview size (nanogif) and share size (gif)
     var d = document.getElementById(
-    "a");
+        "a");
     list = [];
     top_16_gifs.forEach(element => {
         list.push(element[
                 "media_formats"
-                ]["nanogif"]
+            ]["nanogif"]
             ["url"]);
     });
     NewPost.listGif = list;
