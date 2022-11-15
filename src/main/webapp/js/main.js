@@ -639,9 +639,10 @@ var AproposView = {
                     m("h2", {
                             "style": {
                                 "text-align": "center"
-                            }
+                            },
+                            class: "m-4"
                         },
-                        "Notre équipe de choque"
+                        "Notre équipe de choc"
                     ),
                     m("div", {
                             "class": "row apropos"
@@ -798,7 +799,7 @@ var AproposView = {
                                     ),
                                     ". C'est notre directeur technique, il vous garantira une assistance hors du commun vous permettant de profiter de la meilleure expérience possible afin de passer une bonne procrastination. Github : ",
                                     m("a", {
-                                            "href": "https://github.com/Rod4401/TinyGram"
+                                            "href": "mailto:https://github.com/Rod4401/TinyGram"
                                         },
                                         "TinyGram"
                                     )
