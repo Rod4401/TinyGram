@@ -79,7 +79,7 @@ import com.google.appengine.api.datastore.Transaction;
 public class TinyGramEndpoint {
 
     private static final Logger log = Logger.getLogger(TinyGramEndpoint.class.getName());
-
+    private final int POSTS_PER_PAGE = 10;
 
     //  We abstract the fact that this user is already registered and valid
     //  Because it will be just callable by this vlass not any user...
@@ -813,7 +813,7 @@ public class TinyGramEndpoint {
         FetchOptions fo = FetchOptions.Builder.withLimit(1);
         if(pq.countEntities(fo) == 0) throw new UnauthorizedException("Unregistered: Please register before trying to fetch something !");
 
-        fo = FetchOptions.Builder.withLimit(25);
+        fo = FetchOptions.Builder.withLimit(POSTS_PER_PAGE);
 
         //  No pointer, no problem
         if (cursorString != null) {
@@ -873,7 +873,7 @@ public class TinyGramEndpoint {
         Entity userRequested = pq.asSingleEntity();
         if(userRequested == null) throw new NotFoundException("Not found: Please fetch a user that truely exist !");
 
-        fo = FetchOptions.Builder.withLimit(25);
+        fo = FetchOptions.Builder.withLimit(POSTS_PER_PAGE);
 
         //  No pointer, no problem
         if (cursorString != null) {
