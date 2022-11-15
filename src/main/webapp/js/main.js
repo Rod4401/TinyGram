@@ -449,34 +449,41 @@ var Post = {
     connectLikes: function(list) {
         list.map(function(
             item) {
-            //The likes 
-            m.request({
-                    method: "GET",
-                    url: isLikeUrl +
-                        ":id",
-                    params: {
-                        id: item
-                            .key
-                            .name,
-                        access_token: User
-                            .getAccessToken()
-                    }
-                })
-                .then(
-                    function(
-                        result
-                    ) {
-                        item.properties
-                            .likes =
-                            result
-                            .properties
-                            .nbLikes;
-                        item.properties
-                            .like =
-                            result
-                            .properties
-                            .userHasLiked;
+            if(item
+                .properties
+                .nbLikes ==
+                undefined
+                ) {
+                //The likes 
+                m.request({
+                        method: "GET",
+                        url: isLikeUrl +
+                            ":id",
+                        params: {
+                            id: item
+                                .key
+                                .name,
+                            access_token: User
+                                .getAccessToken()
+                        }
                     })
+                    .then(
+                        function(
+                            result
+                        ) {
+                            item.properties
+                                .likes =
+                                result
+                                .properties
+                                .nbLikes;
+                            item.properties
+                                .like =
+                                result
+                                .properties
+                                .userHasLiked;
+                        }
+                        )
+            }
         })
     },
 
@@ -613,86 +620,218 @@ var MainView = {
 var AproposView = {
     view: function() {
         return [
-            m("div",
+            m("div", {
+                    "class": "police apropos"
+                },
                 [
-                    m("h2",
-                        "Qui sommes-nous ?"
-                    ),
-                    m("div",
+                    m("div", {
+                            "class": "about-section apropos"
+                        },
                         [
+                            m("h1",
+                                "About Us Page"
+                            ),
                             m("p",
-                                " L'équipe créatrice de cette excellente, incroyable, phénoménale, invraisemblable, fantastique, extraordinaire, abracadabrante, impressionnante, stupéfiante, rocambolesque, fantasmagorique application Web \"TinyGram\" est composée de 3 étudiants de Nantes Université. Qui sont ces membres hors du commun ?!?!? "
+                                "L'équipe créatrice de cette excellente, incroyable, phénoménale, invraisemblable, fantastique, extraordinaire, abracadabrante, impressionnante, stupéfiante, rocambolesque, fantasmagorique application Web \"TinyGram\" est composée de 3 étudiants de Nantes Université. Qui sont ces membres hors du commun ?!?!?"
+                            )
+                        ]
+                    ),
+                    m("h2", {
+                            "style": {
+                                "text-align": "center"
+                            }
+                        },
+                        "Our Team"
+                    ),
+                    m("div", {
+                            "class": "row apropos"
+                        },
+                        [
+                            m("div", {
+                                    "class": "column apropos"
+                                },
+                                m("div", {
+                                        "class": "card apropos"
+                                    },
+                                    [
+                                        m("img", {
+                                            "src": "https://media.tenor.com/-DyBfnxjz3oAAAAS/kaamelott-arthur.gif",
+                                            "class": "m-2"
+                                        }),
+                                        m("div", {
+                                                "class": "container apropos"
+                                            },
+                                            [
+                                                m("h2",
+                                                    "Rodrigue Meunier"
+                                                ),
+                                                m("h5",
+                                                    "Alias \"Rod4401\" ou \"Captaine Rillettes\""
+                                                ),
+                                                m("p", {
+                                                        "class": "title apropos"
+                                                    },
+                                                    "Student"
+                                                ),
+                                                m("p",
+                                                    "Disposant d'un anglais proche de la perfection, Rodrigue Meunier a su investir corps et âme afin de garantir une belle interface visuelle de cette application. Ce manceau a la particularité d'être un joueur professionnel Minecraft et cela en parallèle de ses études. Il est tout à fait capable de construire un système en redstone qui scale et qui est efficace. Sa plus grande faiblesse se situe sur son téléphone, c'est Tiktok."
+                                                ),
+                                                m("p",
+                                                    "rodrigue.meunier@etu.univ-nantes.fr"
+                                                ),
+                                                m("p",
+                                                    m("button", {
+                                                            "class": "button apropos"
+                                                        },
+                                                        "Contact"
+                                                    )
+                                                )
+                                            ]
+                                        )
+                                    ]
+                                )
                             ),
-                            m("div",
+                            m("div", {
+                                    "class": "column apropos"
+                                },
+                                m("div", {
+                                        "class": "card apropos"
+                                    },
+                                    [
+                                        m("img", {
+                                            "src": "https://media.tenor.com/-DyBfnxjz3oAAAAS/kaamelott-arthur.gif",
+                                            "class": "m-2"
+                                        }),
+                                        m("div", {
+                                                "class": "container apropos"
+                                            },
+                                            [
+                                                m("h2",
+                                                    "Quentin Gomes Dos Reis alias \"ThinkIsPossible\",\"Los Portos\""
+                                                ),
+                                                m("h5",
+                                                    "Alias \"ThinkIsPossible\",\"Los Portos\""
+                                                ),
+                                                m("p", {
+                                                        "class": "title apropos"
+                                                    },
+                                                    "Student"
+                                                ),
+                                                m("p",
+                                                    "Cet individu possède une photo de profil pour le moins... particlièrement angoissante. Cet intriguantpersonnage effectue depuis plus de 3 ans la route en voiture ou en train tous les jours pour se rendre en cours à la fac depuis Clisson. Comment peut-on rester normal après ça... Il est aussi connu pour avoir participer activement dans une organisation criminelle portugaise révolutionniste à distance, notamment en piratant la base de données de toutes les banques mondiales hormis les banques de sa propre contrée."
+                                                ),
+                                                m("p",
+                                                    "quentin.gomes-dos-reis@etu.univ-nantes.fr"
+                                                ),
+                                                m("p",
+                                                    m("button", {
+                                                            "class": "button apropos"
+                                                        },
+                                                        "Contact"
+                                                    )
+                                                )
+                                            ]
+                                        )
+                                    ]
+                                )
+                            ),
+                            m("div", {
+                                    "class": "column apropos"
+                                },
+                                m("div", {
+                                        "class": "card apropos"
+                                    },
+                                    [
+                                        m("img", {
+                                            "src": "https://media.tenor.com/k0b77ukWmA0AAAAM/kaamelott-merlin.gif",
+                                            "class": "m-2"
+                                        }),
+                                        m("div", {
+                                                "class": "container apropos"
+                                            },
+                                            [
+                                                m("h2",
+                                                    "Valentin Goubon alias \"TinkyValou\""
+                                                ),
+                                                m("h5",
+                                                    "Alias \"TinkyValou\""
+                                                ),
+                                                m("p", {
+                                                        "class": "title apropos"
+                                                    },
+                                                    "Student"
+                                                ),
+                                                m("p",
+                                                    "Alors lui on se demande comment il est arrivé là. Plus efficace pour organiser un laser-game, ou bien pour devenir aussi puissant que Jotaro Kujo, Valentin a la particularité aussi de ne pas toujours venir en cours, pour des problèmes de réveil. Nous verrons bien si les quelques séances loupées ne lui seront pas indispensables dans sa réussite scolaire. Le délégué de la promotion ALMA va devoir s'accrocher !"
+                                                ),
+                                                m("p",
+                                                    "valentin.goubon@etu.univ-nantes.fr"
+                                                ),
+                                                m("p",
+                                                    m("button", {
+                                                            "class": "button apropos"
+                                                        },
+                                                        "Contact"
+                                                    )
+                                                )
+                                            ]
+                                        )
+                                    ]
+                                )
+                            )
+                        ]
+                    ),
+                    m("div", {
+                            "class": "about-section apropos"
+                        },
+                        [
+                            m("h1",
+                                "Lien vers notre projet"
+                            ),
+                            m("p",
                                 [
-                                    m("h4",
-                                        "Rodrigue Meunier alias \"Rod4401 ou Captaine Rillettes\""
+                                    " Voici un lien vers notre projet Open Source, afin que vous puissiez admirer notre oeuvre. Si vous rencontrez le moindre souci sur notre application, ce qui est techniquement impossible, n'hésitez pas à contacter monsieur ",
+                                    m("a", {
+                                            "href": "Pascal.Molli@univ-nantes.fr"
+                                        },
+                                        "Pascal Molli"
                                     ),
-                                    m("p",
-                                        " Disposant d'un anglais proche de la perfection, Rodrigue Meunier a su investir corps et âme afin de garantir une belle interface visuelle de cette application. Ce manceau né en 2001 a la particularité d'être un joueur professionnel Minecraft et cela en parallèle de ses études. Il est tout à fait capable de construire un système en redstone qui scale et qui est efficace. Sa plus grande faiblesse se situe sur son téléphone, c'est Tiktok. "
+                                    ". C'est notre directeur technique, il vous garantira une assistance hors du commun vous permettant de profiter de la meilleure expérience possible afin de passer une bonne procrastination. Github : ",
+                                    m("a", {
+                                            "href": "https://github.com/Rod4401/TinyGram"
+                                        },
+                                        "TinyGram"
                                     )
                                 ]
                             ),
-                            m("div",
-                                [
-                                    m("h4",
-                                        "Quentin Gomes Dos Reis alias \"ThinkIsPossible\",\"Los Portos\""
-                                    ),
-                                    m("p",
-                                        " Cet individu possède une photo de profil pour le moins... particlièrement angoissante. Cet intriguant personnage effectue depuis plus de 3 ans la route en voiture ou en train tous les jours pour se rendre en cours à la fac depuis Clisson. Comment peut-on rester normal après ça... Il est aussi connu pour avoir participer activement dans une organisation criminelle portugaise révolutionniste à distance, notamment en piratant la base de données de toutes les banques mondiales hormis les banques de sa propre contrée. "
-                                    )
-                                ]
+                            m("h1",
+                                "Résultats sur la scalabilité de notre projet"
                             ),
                             m("div",
                                 [
-                                    m("h4",
-                                        "Valentin Goubon alias \"TinkyValou\""
-                                    ),
-                                    m("p",
-                                        " Alors lui on se demande comment il est arrivé là. Plus efficace pour organiser un laser-game, ou bien pour devenir aussi puissant que Jotaro Kujo, Valentin a la particularité aussi de ne pas toujours venir en cours, pour des problèmes de réveil. Nous verrons bien si les quelques séances loupées ne lui seront pas indispensables dans sa réussite scolaire. Le délégué de la promotion ALMA va devoir s'accrocher ! "
-                                    )
+                                    m("img", {
+                                        "src": "Image_1.jpg",
+                                        "width": "50%",
+                                        "alt": "Description + ou - détaillée des données si les images ne sont pas accessibles car pas ajoutées."
+                                    }),
+                                    m("img", {
+                                        "src": "Image_2.jpg",
+                                        "width": "50%",
+                                        "alt": "Description + ou - détaillée des données si les images ne sont pas accessibles car pas ajoutées."
+                                    }),
+                                    m("img", {
+                                        "src": "Image_3.jpg",
+                                        "width": "50%",
+                                        "alt": "Description + ou - détaillée des données si les images ne sont pas accessibles car pas ajoutées."
+                                    }),
+                                    m("img", {
+                                        "src": "Image_4.jpg",
+                                        "width": "50%",
+                                        "alt": "Description + ou - détaillée des données si les images ne sont pas accessibles car pas ajoutées."
+                                    })
                                 ]
                             )
                         ]
-                    )
-                ]
-            ),
-            m("div",
-                [
-                    m("h2",
-                        "Résultats sur la scalabilité de notre projet"
-                    ),
-                    m("div",
-                        m("img", {
-                            "src": "Image_1.jpg",
-                            "width": "50%",
-                            "alt": "Description + ou - détaillée des données si les images ne sont pas accessibles car pas ajoutées."
-                        })
-                    )
-                ]
-            ),
-            m("div",
-                [
-                    m("h2",
-                        "Lien vers notre projet"
-                    ),
-                    m("div",
-                        m("p",
-                            [
-                                " Voici un lien vers notre projet Open Source, afin que vous puissiez admirer notre oeuvre. Si vous rencontrez le moindre souci sur notre application, ce qui est techniquement impossible, n'hésitez pas à contacter monsieur ",
-                                m("a", {
-                                        "href": "Pascal.Molli@univ-nantes.fr"
-                                    },
-                                    "Pascal Molli"
-                                ),
-                                ">. C'est notre directeur technique, il vous garantira une assistance hors du commun vous permettant de profiter de la meilleure expérience possible afin de passer une bonne procrastination. Github : ",
-                                m("a", {
-                                        "href": "https://github.com/Rod4401/TinyGram"
-                                    },
-                                    "TinyGram"
-                                )
-                            ]
-                        )
                     )
                 ]
             )
