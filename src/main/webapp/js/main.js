@@ -629,7 +629,7 @@ var AproposView = {
                         },
                         [
                             m("h1",
-                                "About Us Page"
+                                "À propos de nous"
                             ),
                             m("p",
                                 "L'équipe créatrice de cette excellente, incroyable, phénoménale, invraisemblable, fantastique, extraordinaire, abracadabrante, impressionnante, stupéfiante, rocambolesque, fantasmagorique application Web \"TinyGram\" est composée de 3 étudiants de Nantes Université. Qui sont ces membres hors du commun ?!?!?"
@@ -641,7 +641,7 @@ var AproposView = {
                                 "text-align": "center"
                             }
                         },
-                        "Our Team"
+                        "Notre équipe de choque"
                     ),
                     m("div", {
                             "class": "row apropos"
@@ -699,7 +699,7 @@ var AproposView = {
                                     },
                                     [
                                         m("img", {
-                                            "src": "https://media.tenor.com/-DyBfnxjz3oAAAAS/kaamelott-arthur.gif",
+                                            "src": "https://media.tenor.com/OpjEv-qkRIcAAAAC/kaamelott-perceval.gif",
                                             "class": "m-2"
                                         }),
                                         m("div", {
@@ -707,7 +707,7 @@ var AproposView = {
                                             },
                                             [
                                                 m("h2",
-                                                    "Quentin Gomes Dos Reis alias \"ThinkIsPossible\",\"Los Portos\""
+                                                    "Quentin Gomes Dos Reis"
                                                 ),
                                                 m("h5",
                                                     "Alias \"ThinkIsPossible\",\"Los Portos\""
@@ -751,7 +751,7 @@ var AproposView = {
                                             },
                                             [
                                                 m("h2",
-                                                    "Valentin Goubon alias \"TinkyValou\""
+                                                    "Valentin Goubon"
                                                 ),
                                                 m("h5",
                                                     "Alias \"TinkyValou\""
