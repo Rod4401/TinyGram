@@ -719,7 +719,7 @@ var AproposView = {
                                                     "Student"
                                                 ),
                                                 m("p",
-                                                    "Cet individu possède une photo de profil pour le moins... particlièrement angoissante. Cet intriguantpersonnage effectue depuis plus de 3 ans la route en voiture ou en train tous les jours pour se rendre en cours à la fac depuis Clisson. Comment peut-on rester normal après ça... Il est aussi connu pour avoir participer activement dans une organisation criminelle portugaise révolutionniste à distance, notamment en piratant la base de données de toutes les banques mondiales hormis les banques de sa propre contrée."
+                                                    "Cet individu possède une photo de profil pour le moins... particlièrement angoissante. Cet intriguant personnage effectue depuis plus de 3 ans la route en voiture ou en train tous les jours pour se rendre en cours à la fac depuis Clisson. Comment peut-on rester normal après ça... Il est aussi connu pour avoir participer activement dans une organisation criminelle portugaise révolutionniste à distance, notamment en piratant la base de données de toutes les banques mondiales hormis les banques de sa propre contrée."
                                                 ),
                                                 m("p",
                                                     "quentin.gomes-dos-reis@etu.univ-nantes.fr"
