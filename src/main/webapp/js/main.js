@@ -50,21 +50,21 @@ var Connection = {
     /**
      * The view function
      */
-    view: function() {
+    view: function () {
         /**
          * If the user is logged in, "disconnection" is displayed, otherwise the google sigin 
          */
-        if(User.isLoged()) {
+        if (User.isLoged()) {
             return m("li", {
                 class: "list-unstyled dropdown"
             }, [
                 m("button", {
-                        class: "btn material-icons unselectable",
-                        id: "iconUser",
-                        "data-bs-toggle": "dropdown",
-                        "aria-expanded": "false",
-                        type: "button"
-                    },
+                    class: "btn material-icons unselectable",
+                    id: "iconUser",
+                    "data-bs-toggle": "dropdown",
+                    "aria-expanded": "false",
+                    type: "button"
+                },
                     m("img", {
                         class: "iconProfile",
                         src: User
@@ -76,27 +76,27 @@ var Connection = {
                 }, [
                     m("li",
                         m("a", {
-                                class: "dropdown-item",
-                                onclick: function() {
-                                    MainView
-                                        .changeView(
-                                            "profile"
-                                        );
-                                }
-                            },
+                            class: "dropdown-item",
+                            onclick: function () {
+                                MainView
+                                    .changeView(
+                                        "profile"
+                                    );
+                            }
+                        },
                             "Mon profil"
                         )
                     ),
                     m("li",
                         m("a", {
-                                class: "dropdown-item",
-                                onclick: function() {
-                                    MainView
-                                        .changeView(
-                                            "apropos"
-                                        );
-                                }
-                            },
+                            class: "dropdown-item",
+                            onclick: function () {
+                                MainView
+                                    .changeView(
+                                        "apropos"
+                                    );
+                            }
+                        },
                             "A propos"
                         )
                     )
@@ -105,16 +105,16 @@ var Connection = {
 
         } else {
             return m("button", {
-                    class: "btn material-icons unselectable",
-                    id: "iconUser",
-                    "data-bs-toggle": "dropdown",
-                    "aria-expanded": "false",
-                    type: "button",
-                    onclick: function() {
-                        User
-                            .showConnectView();
-                    }
-                },
+                class: "btn material-icons unselectable",
+                id: "iconUser",
+                "data-bs-toggle": "dropdown",
+                "aria-expanded": "false",
+                type: "button",
+                onclick: function () {
+                    User
+                        .showConnectView();
+                }
+            },
                 "account_circle"
             )
         }
@@ -139,7 +139,7 @@ var User = {
     The init function is a setter of the response 
     * @param {response} response The response from google login
     */
-    init: function(response,
+    init: function (response,
         credential) {
         this.response =
             response;
@@ -148,67 +148,67 @@ var User = {
         User.connect()
     },
 
-    connect: function() {
+    connect: function () {
 
         return m.request({
-                method: "PUT",
-                url: connectUrl,
-                params: {
-                    access_token: User
-                        .getAccessToken()
-                },
-            })
-            .then(function(
+            method: "PUT",
+            url: connectUrl,
+            params: {
+                access_token: User
+                    .getAccessToken()
+            },
+        })
+            .then(function (
                 result) {
                 Post
                     .loadListRandom();
             })
-            .catch(function(
+            .catch(function (
                 result) {
                 User
                     .signIn();
             })
     },
 
-    signIn: function() {
+    signIn: function () {
         const responsePayload =
             jwt_decode(User
                 .getAccessToken()
             );
         const lname =
             responsePayload
-            .family_name ===
-            undefined ? "_" :
-            responsePayload
-            .family_name;
+                .family_name ===
+                undefined ? "_" :
+                responsePayload
+                    .family_name;
         const fname =
             responsePayload
-            .given_name ===
-            undefined ?
-            responsePayload
-            .email.split("@")[
+                .given_name ===
+                undefined ?
+                responsePayload
+                    .email.split("@")[
                 0] :
-            responsePayload
-            .given_name;
+                responsePayload
+                    .given_name;
         return m.request({
-                method: "POST",
-                url: signInUrl,
-                params: {
-                    access_token: User
-                        .getAccessToken(),
-                    pseudo: fname,
-                    fname: fname,
-                    lname: lname,
-                    pictureURL: responsePayload
-                        .picture
-                },
-            })
-            .then(function(
+            method: "POST",
+            url: signInUrl,
+            params: {
+                access_token: User
+                    .getAccessToken(),
+                pseudo: fname,
+                fname: fname,
+                lname: lname,
+                pictureURL: responsePayload
+                    .picture
+            },
+        })
+            .then(function (
                 result) {
                 Post
                     .loadListRandom();
             })
-            .catch(function(
+            .catch(function (
                 result) {
                 window
                     .alert(
@@ -220,24 +220,24 @@ var User = {
     /**
      *  The function allows to fill the lists 
      */
-    loadFollowersNumbers: function() {
+    loadFollowersNumbers: function () {
         m.request({
-                method: "GET",
-                url: followedUrl +
-                    ":UserID",
-                params: {
-                    access_token: User
-                        .getAccessToken(),
-                    UserID: User
-                        .getID()
-                }
-            })
-            .then(function(
+            method: "GET",
+            url: followedUrl +
+                ":UserID",
+            params: {
+                access_token: User
+                    .getAccessToken(),
+                UserID: User
+                    .getID()
+            }
+        })
+            .then(function (
                 result) {
                 User.followers =
                     result
-                    .properties
-                    .nbFollow
+                        .properties
+                        .nbFollow
             })
     },
 
@@ -245,7 +245,7 @@ var User = {
      * Function that returns the user's access token
      * @return {String} The user's access token
      */
-    getAccessToken: function() {
+    getAccessToken: function () {
         return this.credential;
     },
 
@@ -253,7 +253,7 @@ var User = {
      * Function that returns the user's picture
      * @return {String} The user's picture
      */
-    getUrl: function() {
+    getUrl: function () {
         return this.response
             .picture;
     },
@@ -262,7 +262,7 @@ var User = {
      * Function that returns the user's id
      * @return {String} The user's id
      */
-    getID: function() {
+    getID: function () {
         return this.response
             .sub;
     },
@@ -272,7 +272,7 @@ var User = {
      * Function that returns the user's name
      * @return {String} The user's name
      */
-    getName: function() {
+    getName: function () {
         return this.response
             .name;
     },
@@ -281,8 +281,8 @@ var User = {
      * The user it is loged ?
      * @return {bool} True if loged, false otherwise
      */
-    isLoged: function() {
-        if(this.response !=
+    isLoged: function () {
+        if (this.response !=
             null) {
             this
                 .hideConnectView();
@@ -298,25 +298,25 @@ var User = {
      * Function that allows to follow the user
      * @param {User} user The user to follow
      */
-    follow: function(user) {
+    follow: function (user) {
         return m.request({
-                method: "POST",
-                url: followUserUrl +
-                    ":idUser",
-                params: {
-                    idUser: user,
-                    access_token: User
-                        .getAccessToken()
-                }
-            })
-            .then(function(
+            method: "POST",
+            url: followUserUrl +
+                ":idUser",
+            params: {
+                idUser: user,
+                access_token: User
+                    .getAccessToken()
+            }
+        })
+            .then(function (
                 result) {
                 Post.list
                     .map(
-                        function(
+                        function (
                             item
                         ) {
-                            if(item
+                            if (item
                                 .properties
                                 .creatorID ==
                                 user
@@ -329,16 +329,16 @@ var User = {
             })
     },
 
-    showConnectView: function() {
+    showConnectView: function () {
         document.getElementById(
-                "login")
+            "login")
             .className =
             "container centered";
     },
 
-    hideConnectView: function() {
+    hideConnectView: function () {
         document.getElementById(
-                "login")
+            "login")
             .className = "hide";
     }
 
@@ -359,31 +359,31 @@ var Post = {
     /**
      * The function that allows you to load my post list
      */
-    loadListPerso: function() {
+    loadListPerso: function () {
         return m.request({
-                method: "GET",
-                url: postUserUrl +
-                    ":idUser",
-                params: {
-                    idUser: User
-                        .getID(),
-                    access_token: User
-                        .getAccessToken()
-                }
-            })
-            .then(function(
-                    result) {
-                    Post.myList =
-                        result
+            method: "GET",
+            url: postUserUrl +
+                ":idUser",
+            params: {
+                idUser: User
+                    .getID(),
+                access_token: User
+                    .getAccessToken()
+            }
+        })
+            .then(function (
+                result) {
+                Post.myList =
+                    result
                         .items,
-                        Post
+                    Post
                         .connectLikes(
                             Post
-                            .myList
-                            ),
-                        User
+                                .myList
+                        ),
+                    User
                         .loadFollowersNumbers()
-                },
+            },
 
             )
     },
@@ -393,105 +393,102 @@ var Post = {
      * (the most recent) of people I don't follow
      * Restart the cursor (is reload)
      */
-    reload: function() {
+    reload: function () {
         Post.cursor = "",
             Post.list = [],
             Post
-            .loadListRandom()
+                .loadListRandom()
     },
 
     /**
      * The function that allows you to load the list of posts 
      * (the most recent) of people I don't follow
      */
-    loadListRandom: function() {
+    loadListRandom: function () {
         this.chargerSuivants()
     },
 
-    chargerSuivants: function() {
+    chargerSuivants: function () {
         return m.request({
-                method: "GET",
-                url: postRandomsUrl,
-                params: {
-                    access_token: User
-                        .getAccessToken(),
-                    next: Post
-                        .cursor
-                }
-            })
-            .then(function(
+            method: "GET",
+            url: postRandomsUrl,
+            params: {
+                access_token: User
+                    .getAccessToken(),
+                next: Post
+                    .cursor
+            }
+        })
+            .then(function (
                 result) {
-                Post.list
-                    .push
-                    .apply(
-                        Post
-                        .list,
-                        result
-                        .items
+                if (result.items !== undefined) {
+                    Post.list.push.apply(
+                        Post.list, result.items
                     ),
-                    Post
-                    .connectLikes(
-                        Post
-                        .list
-                    ),
-                    Post
-                    .connectUser(
-                        Post
-                        .list
-                    ),
-                    Post
-                    .cursor =
-                    result
-                    .nextPageToken
+                        Post.connectLikes(
+                            Post
+                                .list
+                        ),
+                        Post.connectUser(
+                            Post
+                                .list
+                        ),
+                        Post.cursor = result.nextPageToken
+                }
             })
     },
 
-    connectLikes: function(list) {
-        list.map(function(
+    connectLikes: function (list) {
+        list.map(function (
             item) {
-            if(item
+            if (item
                 .properties
                 .nbLikes ==
                 undefined
-                ) {
+            ) {
                 //The likes 
                 m.request({
-                        method: "GET",
-                        url: isLikeUrl +
-                            ":id",
-                        params: {
-                            id: item
-                                .key
-                                .name,
-                            access_token: User
-                                .getAccessToken()
-                        }
-                    })
+                    method: "GET",
+                    url: isLikeUrl +
+                        ":id",
+                    params: {
+                        id: item
+                            .key
+                            .name,
+                        access_token: User
+                            .getAccessToken()
+                    }
+                })
                     .then(
-                        function(
+                        function (
                             result
                         ) {
                             item.properties
                                 .likes =
                                 result
-                                .properties
-                                .nbLikes;
+                                    .properties
+                                    .nbLikes;
                             item.properties
                                 .like =
                                 result
-                                .properties
-                                .userHasLiked;
+                                    .properties
+                                    .userHasLiked;
                         }
-                        )
+                    )
             }
         })
     },
 
-    connectUser: function(list) {
-        list.map(function(
+    connectUser: function (list) {
+        list.map(function (
             item) {
-            //The users infos
-            m.request({
+            if (item
+                .properties
+                .creatorURL ==
+                undefined
+            ) {
+                //The users infos
+                m.request({
                     method: "GET",
                     url: userInfo +
                         ":UserID",
@@ -503,26 +500,27 @@ var Post = {
                             .getAccessToken()
                     }
                 })
-                .then(
-                    function(
-                        result
-                    ) {
-                        item.properties
-                            .creatorURL =
+                    .then(
+                        function (
                             result
-                            .properties
-                            .pictureUrl;
-                        item.properties
-                            .creatorPseudo =
-                            result
-                            .properties
-                            .pseudo;
-                        item.properties
-                            .userHasFollowed =
-                            result
-                            .properties
-                            .userHasFollowed;
-                    })
+                        ) {
+                            item.properties
+                                .creatorURL =
+                                result
+                                    .properties
+                                    .pictureUrl;
+                            item.properties
+                                .creatorPseudo =
+                                result
+                                    .properties
+                                    .pseudo;
+                            item.properties
+                                .userHasFollowed =
+                                result
+                                    .properties
+                                    .userHasFollowed;
+                        })
+            }
         })
     },
 
@@ -530,9 +528,9 @@ var Post = {
      * The function that allows you to like a post
      * @param {post} post The post to like
      */
-    like: function(post) {
-        if(User.isLoged()) {
-            if(!post.properties
+    like: function (post) {
+        if (User.isLoged()) {
+            if (!post.properties
                 .like) {
                 //Putting it in the function return is too long >1s.
                 post.properties
@@ -553,7 +551,7 @@ var Post = {
                         }
                     })
                     .then(
-                        function(
+                        function (
                             result
                         ) {
                             post.properties
@@ -576,8 +574,8 @@ var MainView = {
     /**
      * The view function
      */
-    view: function() {
-        switch(this.type) {
+    view: function () {
+        switch (this.type) {
             case "welcome":
                 return PostView
                     .view();
@@ -594,13 +592,13 @@ var MainView = {
      * The function that allows you to change views
      * @param {view} view The type of view
      */
-    changeView: function(view) {
-        if(User.isLoged()) {
-            if(this.type !=
+    changeView: function (view) {
+        if (User.isLoged()) {
+            if (this.type !=
                 view) {
                 this.type = view
             }
-            if(view ==
+            if (view ==
                 "profile") {
                 Post
                     .loadListPerso();
@@ -618,15 +616,15 @@ var MainView = {
  * The component that manages the A propos view
  */
 var AproposView = {
-    view: function() {
+    view: function () {
         return [
             m("div", {
-                    "class": "police apropos"
-                },
+                "class": "police apropos"
+            },
                 [
                     m("div", {
-                            "class": "about-section apropos"
-                        },
+                        "class": "about-section apropos"
+                    },
                         [
                             m("h1",
                                 "À propos de nous"
@@ -637,31 +635,31 @@ var AproposView = {
                         ]
                     ),
                     m("h2", {
-                            "style": {
-                                "text-align": "center"
-                            },
-                            class: "m-4"
+                        "style": {
+                            "text-align": "center"
                         },
+                        class: "m-4"
+                    },
                         "Notre équipe de choc"
                     ),
                     m("div", {
-                            "class": "row apropos"
-                        },
+                        "class": "row apropos"
+                    },
                         [
                             m("div", {
-                                    "class": "column apropos"
-                                },
+                                "class": "column apropos"
+                            },
                                 m("div", {
-                                        "class": "card apropos"
-                                    },
+                                    "class": "card apropos"
+                                },
                                     [
                                         m("img", {
                                             "src": "https://media.tenor.com/-DyBfnxjz3oAAAAS/kaamelott-arthur.gif",
                                             "class": "m-2"
                                         }),
                                         m("div", {
-                                                "class": "container apropos"
-                                            },
+                                            "class": "container apropos"
+                                        },
                                             [
                                                 m("h2",
                                                     "Rodrigue Meunier"
@@ -670,8 +668,8 @@ var AproposView = {
                                                     "Alias \"Rod4401\" ou \"Captaine Rillettes\""
                                                 ),
                                                 m("p", {
-                                                        "class": "title apropos"
-                                                    },
+                                                    "class": "title apropos"
+                                                },
                                                     "Student"
                                                 ),
                                                 m("p",
@@ -682,8 +680,8 @@ var AproposView = {
                                                 ),
                                                 m("p",
                                                     m("button", {
-                                                            "class": "button apropos"
-                                                        },
+                                                        "class": "button apropos"
+                                                    },
                                                         "Contact"
                                                     )
                                                 )
@@ -693,19 +691,19 @@ var AproposView = {
                                 )
                             ),
                             m("div", {
-                                    "class": "column apropos"
-                                },
+                                "class": "column apropos"
+                            },
                                 m("div", {
-                                        "class": "card apropos"
-                                    },
+                                    "class": "card apropos"
+                                },
                                     [
                                         m("img", {
                                             "src": "https://media.tenor.com/OpjEv-qkRIcAAAAC/kaamelott-perceval.gif",
                                             "class": "m-2"
                                         }),
                                         m("div", {
-                                                "class": "container apropos"
-                                            },
+                                            "class": "container apropos"
+                                        },
                                             [
                                                 m("h2",
                                                     "Quentin Gomes Dos Reis"
@@ -714,20 +712,20 @@ var AproposView = {
                                                     "Alias \"ThinkIsPossible\",\"Los Portos\""
                                                 ),
                                                 m("p", {
-                                                        "class": "title apropos"
-                                                    },
+                                                    "class": "title apropos"
+                                                },
                                                     "Student"
                                                 ),
                                                 m("p",
-                                                    "Cet individu possède une photo de profil pour le moins... particlièrement angoissante. Cet intriguant personnage effectue depuis plus de 3 ans la route en voiture ou en train tous les jours pour se rendre en cours à la fac depuis Clisson. Comment peut-on rester normal après ça... Il est aussi connu pour avoir participer activement dans une organisation criminelle portugaise révolutionniste à distance, notamment en piratant la base de données de toutes les banques mondiales hormis les banques de sa propre contrée."
+                                                    "Cet individu possède une photo de profil pour le moins... particulièrement angoissante. Cet intriguant personnage effectue depuis plus de 3 ans, la route en voiture ou en train tous les jours pour se rendre en cours à la fac depuis Clisson. Comment peut-on rester normal après ça...Il est aussi connu pour son implication dans le back à l'ombre du front et rappelle régulièrement à son camarade, le Capitaine Rillettes, que si une méthode du back ne fonctionne pas, c'est qu'il faut d'abord l'appeler correctement avant de blamer le back, bref affaire à suivre..."
                                                 ),
                                                 m("p",
                                                     "quentin.gomes-dos-reis@etu.univ-nantes.fr"
                                                 ),
                                                 m("p",
                                                     m("button", {
-                                                            "class": "button apropos"
-                                                        },
+                                                        "class": "button apropos"
+                                                    },
                                                         "Contact"
                                                     )
                                                 )
@@ -737,19 +735,19 @@ var AproposView = {
                                 )
                             ),
                             m("div", {
-                                    "class": "column apropos"
-                                },
+                                "class": "column apropos"
+                            },
                                 m("div", {
-                                        "class": "card apropos"
-                                    },
+                                    "class": "card apropos"
+                                },
                                     [
                                         m("img", {
                                             "src": "https://media.tenor.com/k0b77ukWmA0AAAAM/kaamelott-merlin.gif",
                                             "class": "m-2"
                                         }),
                                         m("div", {
-                                                "class": "container apropos"
-                                            },
+                                            "class": "container apropos"
+                                        },
                                             [
                                                 m("h2",
                                                     "Valentin Goubon"
@@ -758,8 +756,8 @@ var AproposView = {
                                                     "Alias \"TinkyValou\""
                                                 ),
                                                 m("p", {
-                                                        "class": "title apropos"
-                                                    },
+                                                    "class": "title apropos"
+                                                },
                                                     "Student"
                                                 ),
                                                 m("p",
@@ -770,8 +768,8 @@ var AproposView = {
                                                 ),
                                                 m("p",
                                                     m("button", {
-                                                            "class": "button apropos"
-                                                        },
+                                                        "class": "button apropos"
+                                                    },
                                                         "Contact"
                                                     )
                                                 )
@@ -783,8 +781,8 @@ var AproposView = {
                         ]
                     ),
                     m("div", {
-                            "class": "about-section apropos"
-                        },
+                        "class": "about-section apropos"
+                    },
                         [
                             m("h1",
                                 "Lien vers notre projet"
@@ -793,14 +791,14 @@ var AproposView = {
                                 [
                                     " Voici un lien vers notre projet Open Source, afin que vous puissiez admirer notre oeuvre. Si vous rencontrez le moindre souci sur notre application, ce qui est techniquement impossible, n'hésitez pas à contacter monsieur ",
                                     m("a", {
-                                            "href": "Pascal.Molli@univ-nantes.fr"
-                                        },
+                                        "href": "Pascal.Molli@univ-nantes.fr"
+                                    },
                                         "Pascal Molli"
                                     ),
                                     ". C'est notre directeur technique, il vous garantira une assistance hors du commun vous permettant de profiter de la meilleure expérience possible afin de passer une bonne procrastination. Github : ",
                                     m("a", {
-                                            "href": "mailto:https://github.com/Rod4401/TinyGram"
-                                        },
+                                        "href": "mailto:https://github.com/Rod4401/TinyGram"
+                                    },
                                         "TinyGram"
                                     )
                                 ]
@@ -810,26 +808,19 @@ var AproposView = {
                             ),
                             m("div",
                                 [
+                                    m("h3", {"class":"mb-3 mt-3"}, "Courbe cumulée croissante de la latence"),
                                     m("img", {
-                                        "src": "Image_1.jpg",
-                                        "width": "50%",
-                                        "alt": "Description + ou - détaillée des données si les images ne sont pas accessibles car pas ajoutées."
+                                        "src": "img/courbeCumuléeCroissante.png",
+                                        "class": "mw-100",
                                     }),
+                                    m("h3", {"class":"mb-3 mt-3"},"Courbe de la densité de la latence"),
                                     m("img", {
-                                        "src": "Image_2.jpg",
-                                        "width": "50%",
-                                        "alt": "Description + ou - détaillée des données si les images ne sont pas accessibles car pas ajoutées."
+                                        "src": "img/courbeDensité.png",
+                                        "class": "mw-100",
                                     }),
-                                    m("img", {
-                                        "src": "Image_3.jpg",
-                                        "width": "50%",
-                                        "alt": "Description + ou - détaillée des données si les images ne sont pas accessibles car pas ajoutées."
-                                    }),
-                                    m("img", {
-                                        "src": "Image_4.jpg",
-                                        "width": "50%",
-                                        "alt": "Description + ou - détaillée des données si les images ne sont pas accessibles car pas ajoutées."
-                                    })
+                                    m("h3", {"class":"mb-3 mt-3"},"Latences détaillées en fonction du pourcentage"),
+                                    m("img", {"src": "img/LatenceDetaillée.png"}),
+                                    m("p", {"class":"text-break"}, "D'après les rapports de Google. On peut voir que le cap des 500ms symbolique est dépassé au delà de 65% des requêtes. Étant donnée que nous n'avons pas executé nos requêtes sur des millions d'utilisateurs, la moindre latence (une personne ayant une connexion pour le moins douteuse) nous fait défaut. On ne peut pas conclure de rapport sur une aussi courte période mais on voit que pour un nombre assez restraint d'utilisateur, les requêtes sont déjà \"correctes\""),
                                 ]
                             )
                         ]
@@ -857,7 +848,7 @@ var ProfileView = {
     /**
      * The view function
      */
-    view: function() {
+    view: function () {
         return m("div", {
             class: "container"
         }, m("div", {
@@ -868,15 +859,15 @@ var ProfileView = {
                 class: "col-lg-4 mb-2 mt-3 bg-light offset-lg-2 h-25"
             }, [
                 m("div", {
-                        class: "container pb-2 border-bottom"
-                    },
+                    class: "container pb-2 border-bottom"
+                },
                     m("div", {
-                            class: "row"
-                        },
+                        class: "row"
+                    },
                         [
                             m("div", {
-                                    class: "col-3 postsProfilePicture w-25"
-                                },
+                                class: "col-3 postsProfilePicture w-25"
+                            },
                                 m("img", {
                                     style: "border-radius: 50%;",
                                     src: User
@@ -888,25 +879,25 @@ var ProfileView = {
                                 })
                             ),
                             m("div", {
-                                    class: "col-9 row-cols-1 pe-0"
-                                },
+                                class: "col-9 row-cols-1 pe-0"
+                            },
                                 [
                                     m("div", {
-                                            class: "h-50 align-items-center d-flex"
-                                        },
+                                        class: "h-50 align-items-center d-flex"
+                                    },
                                         m("h4",
                                             User
-                                            .getName()
+                                                .getName()
                                         )
                                     ),
                                     m("div", {
-                                            class: "h-50 align-items-right d-flex"
-                                        },
+                                        class: "h-50 align-items-right d-flex"
+                                    },
                                         [m("span", {
-                                                class: "me-4"
-                                            },
+                                            class: "me-4"
+                                        },
                                             User
-                                            .followers +
+                                                .followers +
                                             " followers"
                                         )]
                                     )
@@ -916,82 +907,82 @@ var ProfileView = {
                     )
                 ),
                 m("div", {
-                        class: "rounded h-100"
-                    },
+                    class: "rounded h-100"
+                },
                     [
                         ProfileView
-                        .listView
-                        .map(
-                            function(
-                                item
-                            ) {
-                                return m(
-                                    "p", {
+                            .listView
+                            .map(
+                                function (
+                                    item
+                                ) {
+                                    return m(
+                                        "p", {
                                         class: "fw-bold"
                                     },
-                                    item
-                                );
-                            }
-                        )
+                                        item
+                                    );
+                                }
+                            )
                     ]
                 )
 
             ]), m(
                 "div", {
-                    class: "col-lg-4 me-2 pe-0 ps-0 mt-3 mb-2 offset-lg-1 bg-light",
-                    id: "profilePosts"
-                },
+                class: "col-lg-4 me-2 pe-0 ps-0 mt-3 mb-2 offset-lg-1 bg-light",
+                id: "profilePosts"
+            },
                 m("div", {
-                        class: "container"
-                    },
+                    class: "container"
+                },
                     m("div", {
-                            class: "row"
-                        },
+                        class: "row"
+                    },
                         [
                             Post
-                            .myList
-                            .map(
-                                function(
-                                    item
-                                ) {
+                                .myList
+                                .map(
+                                    function (
+                                        item
+                                    ) {
 
-                                    return m(
-                                        'div', {
+                                        return m(
+                                            'div', {
                                             class: "border rounded row row-cols-1 mt-2 bg-white",
                                             id: item
                                                 .key
                                                 .name,
                                         },
-                                        [
-                                            //IMAGE
-                                            m('div', {
+                                            [
+                                                //IMAGE
+                                                m('div', {
                                                     class: "border-bottom mt-2",
                                                     style: "padding-left:0;padding-right:0;"
                                                 },
-                                                [
-                                                    m('img', {
-                                                        class: "w-100 unselectable",
-                                                        src: item
-                                                            .properties
-                                                            .pictureUrl
-                                                    }),
-                                                ]
-                                            ),
+                                                    [
+                                                        m('img', {
+                                                            class: "w-100 unselectable",
+                                                            src: item
+                                                                .properties
+                                                                .pictureUrl
+                                                        }),
+                                                    ]
+                                                ),
 
-                                            //LIKE
-                                            m('div', {
+                                                //LIKE
+                                                m('div', {
                                                     class: "container mt-1"
                                                 },
-                                                [
-                                                    m('div', {
+                                                    [
+                                                        m('div', {
                                                             class: "row"
                                                         },
-                                                        [
-                                                            m('div', {
+                                                            [
+                                                                m('div', {
                                                                     class: "col-1 ps-0"
                                                                 },
-                                                                [
-                                                                    m('span', {
+                                                                    [
+                                                                        m('span', {
                                                                             class: "material-icons unselectable ms-2",
                                                                             style: item
                                                                                 .properties
@@ -999,71 +990,71 @@ var ProfileView = {
                                                                                 true ?
                                                                                 "margin-left:0;margin-right:0; color:red;" :
                                                                                 "margin-left:0;margin-right:0;",
-                                                                            onclick: function() {
+                                                                            onclick: function () {
                                                                                 Post.like(
                                                                                     item,
                                                                                 )
                                                                             }
                                                                         },
-                                                                        item
-                                                                        .properties
-                                                                        .like ==
-                                                                        true ?
-                                                                        "favorite" :
-                                                                        "favorite_border",
-                                                                    ),
-                                                                ]
-                                                            ),
-                                                            m('div', {
+                                                                            item
+                                                                                .properties
+                                                                                .like ==
+                                                                                true ?
+                                                                                "favorite" :
+                                                                                "favorite_border",
+                                                                        ),
+                                                                    ]
+                                                                ),
+                                                                m('div', {
                                                                     class: "col-4 offset-7"
                                                                 },
-                                                                [
-                                                                    m('p', {
+                                                                    [
+                                                                        m('p', {
                                                                             class: "fw-bold text-end"
                                                                         },
-                                                                        item
-                                                                        .properties
-                                                                        .likes +
-                                                                        " Likes"
-                                                                    ),
-                                                                ]
-                                                            ),
-                                                        ]
-                                                    ),
-                                                ]
-                                            ),
+                                                                            item
+                                                                                .properties
+                                                                                .likes +
+                                                                            " Likes"
+                                                                        ),
+                                                                    ]
+                                                                ),
+                                                            ]
+                                                        ),
+                                                    ]
+                                                ),
 
-                                            // DESCRIPTION
-                                            m('div',
-                                                [
-                                                    m('h6', {
+                                                // DESCRIPTION
+                                                m('div',
+                                                    [
+                                                        m('h6', {
                                                             class: "text-break mb-0 lead",
                                                             style: "font-size:15;"
                                                         },
-                                                        new Date(
-                                                            item
-                                                            .properties
-                                                            .date
+                                                            new Date(
+                                                                item
+                                                                    .properties
+                                                                    .date
                                                             )
-                                                        .toLocaleDateString(
-                                                            "fr-FR",
-                                                            options
-                                                            )
+                                                                .toLocaleDateString(
+                                                                    "fr-FR",
+                                                                    options
+                                                                )
                                                         ),
-                                                    m('p', {
+                                                        m('p', {
                                                             class: "text-break"
                                                         },
-                                                        item
-                                                        .properties
-                                                        .body
+                                                            item
+                                                                .properties
+                                                                .body
                                                         )
-                                                ]
-                                            ),
+                                                    ]
+                                                ),
 
-                                        ]
-                                    )
-                                }
-                            )
+                                            ]
+                                        )
+                                    }
+                                )
                         ]
                     )
                 )
@@ -1075,7 +1066,7 @@ var ProfileView = {
      * The function that allows you to change views (followers or follows)
      * @param {type} type The new type
      */
-    changeView: function(type) {
+    changeView: function (type) {
         //console.log(type);
         this.type = type;
         this.search("");
@@ -1085,18 +1076,18 @@ var ProfileView = {
      * The function that allows you to search for users based on a pattern (name)
      *  @param {name} name The name to search
      */
-    search: function(name) {
+    search: function (name) {
         this.listView = (this
-                .type ==
-                "followers" ?
-                User
+            .type ==
+            "followers" ?
+            User
                 .listFollowers :
-                User.listFollows
-            )
+            User.listFollows
+        )
             .filter(
                 username =>
-                username
-                .includes(name)
+                    username
+                        .includes(name)
             );
         m.redraw();
     }
@@ -1111,7 +1102,7 @@ var PostView = {
     /**
      * Function that returns to the top of page
      */
-    goTop: function() {
+    goTop: function () {
         //console.log("Go on top");
         window.scrollTo({
             top: 0,
@@ -1122,126 +1113,126 @@ var PostView = {
     /**
      * The view function
      */
-    view: function() {
+    view: function () {
         return m("div", {
             class: "container d-flex justify-content-center",
             style: "width:400px;"
         }, m('div', [
             Post
-            .list
-            .map(
-                function(
-                    item
-                ) {
-                    return m(
-                        'div', {
+                .list
+                .map(
+                    function (
+                        item
+                    ) {
+                        return m(
+                            'div', {
                             class: "border rounded row row-cols-1 mt-2 bg-white",
                             id: item
                                 .key
                                 .name,
                         },
-                        [
-                            // ENTETE
-                            m('div', {
+                            [
+                                // ENTETE
+                                m('div', {
                                     class: "mt-2 ps-0 border-bottom col"
                                 },
-                                [
-                                    m('div', {
+                                    [
+                                        m('div', {
                                             class: "container mb-1"
                                         },
-                                        [
-                                            m('div', {
+                                            [
+                                                m('div', {
                                                     class: "row"
                                                 },
-                                                [
-                                                    m('div', {
+                                                    [
+                                                        m('div', {
                                                             class: "col-1"
                                                         },
-                                                        m('img', {
-                                                            class: "iconProfile unselectable",
-                                                            onclick: function() {
-                                                                User.follow(
-                                                                    item
+                                                            m('img', {
+                                                                class: "iconProfile unselectable",
+                                                                onclick: function () {
+                                                                    User.follow(
+                                                                        item
+                                                                            .properties
+                                                                            .creatorID,
+                                                                    )
+                                                                },
+                                                                src: item
                                                                     .properties
-                                                                    .creatorID,
-                                                                )
-                                                            },
-                                                            src: item
-                                                                .properties
-                                                                .creatorURL
-                                                        })
-                                                    ),
-                                                    m('div', {
+                                                                    .creatorURL
+                                                            })
+                                                        ),
+                                                        m('div', {
                                                             class: "col-8"
                                                         },
-                                                        [m('span', {
-                                                                    class: "fw-bold me-1"
-                                                                },
+                                                            [m('span', {
+                                                                class: "fw-bold me-1"
+                                                            },
                                                                 item
-                                                                .properties
-                                                                .creatorPseudo
+                                                                    .properties
+                                                                    .creatorPseudo
                                                             ),
 
                                                             item
-                                                            .properties
-                                                            .creatorID !=
-                                                            User
-                                                            .getID() &&
-                                                            item
-                                                            .properties
-                                                            .userHasFollowed ==
-                                                            false ?
-                                                            (m('span', {
+                                                                .properties
+                                                                .creatorID !=
+                                                                User
+                                                                    .getID() &&
+                                                                item
+                                                                    .properties
+                                                                    .userHasFollowed ==
+                                                                false ?
+                                                                (m('span', {
                                                                     class: "pt-0 text-primary",
                                                                     style: "cursor: pointer;",
-                                                                    onclick: function() {
+                                                                    onclick: function () {
                                                                         User.follow(
                                                                             item
-                                                                            .properties
-                                                                            .creatorID
+                                                                                .properties
+                                                                                .creatorID
                                                                         )
                                                                     }
                                                                 },
-                                                                "• Suivre"
-                                                            )) :
-                                                            "",
-                                                        ]
-                                                    )
-                                                ]
-                                            ),
-                                        ]
-                                    ),
-                                ]
-                            ),
-                            //IMAGE
-                            m('div', {
+                                                                    "• Suivre"
+                                                                )) :
+                                                                "",
+                                                            ]
+                                                        )
+                                                    ]
+                                                ),
+                                            ]
+                                        ),
+                                    ]
+                                ),
+                                //IMAGE
+                                m('div', {
                                     class: "border-bottom",
                                     style: "padding-left:0;padding-right:0;"
                                 },
-                                [
-                                    m('img', {
-                                        class: "w-100 unselectable",
-                                        src: item
-                                            .properties
-                                            .pictureUrl
-                                    }),
-                                ]
-                            ),
+                                    [
+                                        m('img', {
+                                            class: "w-100 unselectable",
+                                            src: item
+                                                .properties
+                                                .pictureUrl
+                                        }),
+                                    ]
+                                ),
 
-                            //LIKE
-                            m('div', {
+                                //LIKE
+                                m('div', {
                                     class: "container mt-1"
                                 },
-                                [
-                                    m('div', {
+                                    [
+                                        m('div', {
                                             class: "row"
                                         },
-                                        [
-                                            m('div', {
+                                            [
+                                                m('div', {
                                                     class: "col-1 ps-0"
                                                 },
-                                                [
-                                                    m('span', {
+                                                    [
+                                                        m('span', {
                                                             class: "material-icons unselectable ms-2",
                                                             style: item
                                                                 .properties
@@ -1249,91 +1240,91 @@ var PostView = {
                                                                 true ?
                                                                 "margin-left:0;margin-right:0; color:red;" :
                                                                 "margin-left:0;margin-right:0;",
-                                                            onclick: function() {
+                                                            onclick: function () {
                                                                 Post.like(
                                                                     item,
                                                                 )
                                                             }
                                                         },
-                                                        item
-                                                        .properties
-                                                        .like ==
-                                                        true ?
-                                                        "favorite" :
-                                                        "favorite_border",
-                                                    ),
-                                                ]
-                                            ),
-                                            m('div', {
+                                                            item
+                                                                .properties
+                                                                .like ==
+                                                                true ?
+                                                                "favorite" :
+                                                                "favorite_border",
+                                                        ),
+                                                    ]
+                                                ),
+                                                m('div', {
                                                     class: "col-4 offset-7"
                                                 },
-                                                [
-                                                    m('p', {
+                                                    [
+                                                        m('p', {
                                                             class: "fw-bold text-end"
                                                         },
-                                                        item
-                                                        .properties
-                                                        .likes +
-                                                        " Likes"
-                                                    ),
-                                                ]
-                                            ),
-                                        ]
-                                    ),
-                                ]
-                            ),
+                                                            item
+                                                                .properties
+                                                                .likes +
+                                                            " Likes"
+                                                        ),
+                                                    ]
+                                                ),
+                                            ]
+                                        ),
+                                    ]
+                                ),
 
-                            // DESCRIPTION
-                            m('div',
-                                [
-                                    m('h6', {
+                                // DESCRIPTION
+                                m('div',
+                                    [
+                                        m('h6', {
                                             class: "text-break mb-0 lead",
                                             style: "font-size:15;"
                                         },
-                                        new Date(
-                                            item
-                                            .properties
-                                            .date
+                                            new Date(
+                                                item
+                                                    .properties
+                                                    .date
                                             )
-                                        .toLocaleDateString(
-                                            "fr-FR",
-                                            options
-                                            )
+                                                .toLocaleDateString(
+                                                    "fr-FR",
+                                                    options
+                                                )
                                         ),
-                                    m('p', {
+                                        m('p', {
                                             class: "text-break"
                                         },
-                                        item
-                                        .properties
-                                        .body
+                                            item
+                                                .properties
+                                                .body
                                         )
-                                ]
-                            ),
+                                    ]
+                                ),
 
-                        ]
-                    )
-                }),
+                            ]
+                        )
+                    }),
             Post
-            .list
-            .length !=
-            0 ?
-            (m("div", {
+                .list
+                .length !=
+                0 ?
+                (m("div", {
                     "class": "border rounded row row-cols-1 mt-2 bg-white"
                 },
-                m("div", {
+                    m("div", {
                         "class": "d-flex justify-content-center"
                     },
-                    m("button", {
+                        m("button", {
                             "class": "btn",
-                            onclick: function() {
+                            onclick: function () {
                                 Post
                                     .chargerSuivants();
                             }
                         },
-                        "Suivant"
+                            "Suivant"
+                        )
                     )
-                )
-            )) : "",
+                )) : "",
         ]))
     }
 }
@@ -1347,58 +1338,49 @@ var NewPost = {
     listGif: [],
     isShow: false,
 
-    search: function(text) {
+    search: function (text) {
         grab_data(text);
     },
 
-    view: function() {
-        if(this.isShow ==
+    view: function () {
+        if (this.isShow ==
             true) {
             this.url = "";
             this.body = "";
             return m("div", {
-                    "id": "newPost"
-                },
+                "id": "newPost"
+            },
                 [
                     m("div", {
                         "class": "fondTransparent",
-                        onclick: function() {
+                        onclick: function () {
                             NewPost
                                 .hide()
                         }
                     }),
                     m("div", {
-                            "class": "overlayDiv centered rounded onTop bg-light"
-                        },
+                        "class": "overlayDiv centered rounded onTop bg-light"
+                    },
                         [
                             m("div", {
-                                    "class": "centered-width"
-                                },
-                                m("p", {
-                                        "class": "text-justify fw-bold",
-                                        "style": {
-                                            "font-family": "Dancing Script",
-                                            "font-size": "25px"
-                                        }
-                                    },
-                                    "Créer une publication"
-                                )
+                                "class": "centered-width"
+                            }
                             ),
                             m("div", {
-                                    "class": "row overlayContainer centered"
-                                },
+                                "class": "row overlayContainer centered"
+                            },
                                 [
                                     m("div", {
-                                            "class": "col-8 bg-body border",
-                                            "id": "url"
-                                        },
+                                        "class": "col-8 bg-body border",
+                                        "id": "url"
+                                    },
                                         [
                                             m("textarea", {
-                                                "oninput": function() {
+                                                "oninput": function () {
                                                     NewPost
                                                         .url =
                                                         this
-                                                        .value
+                                                            .value
                                                 },
                                                 value: NewPost
                                                     .url,
@@ -1408,25 +1390,25 @@ var NewPost = {
                                             }),
                                             m("div",
                                                 m("div", {
-                                                        "class": "input-group input-group-sm mb-3"
-                                                    },
+                                                    "class": "input-group input-group-sm mb-3"
+                                                },
                                                     [
                                                         m("div", {
-                                                                "class": "input-group-prepend"
-                                                            },
+                                                            "class": "input-group-prepend"
+                                                        },
                                                             m("span", {
-                                                                    "class": "input-group-text",
-                                                                    "id": "inputGroup-sizing-sm"
-                                                                },
+                                                                "class": "input-group-text",
+                                                                "id": "inputGroup-sizing-sm"
+                                                            },
                                                                 "GIF"
                                                             )
                                                         ),
                                                         m("input", {
-                                                            "oninput": function() {
+                                                            "oninput": function () {
                                                                 NewPost
                                                                     .search(
                                                                         this
-                                                                        .value
+                                                                            .value
                                                                     )
                                                             },
                                                             "class": "form-control",
@@ -1438,55 +1420,55 @@ var NewPost = {
                                                 )
                                             ),
                                             m("div", {
-                                                    "class": "container",
-                                                    "id": "gifs"
-                                                },
+                                                "class": "container",
+                                                "id": "gifs"
+                                            },
                                                 m("div", {
-                                                        "class": "row"
-                                                    },
+                                                    "class": "row"
+                                                },
                                                     [
                                                         NewPost
-                                                        .listGif
-                                                        .map(
-                                                            function(
-                                                                item
-                                                            ) {
-                                                                return m(
-                                                                    "div", {
+                                                            .listGif
+                                                            .map(
+                                                                function (
+                                                                    item
+                                                                ) {
+                                                                    return m(
+                                                                        "div", {
                                                                         "class": "col-3 p-0"
                                                                     },
-                                                                    m("img", {
-                                                                        "src": item,
-                                                                        "style": {
-                                                                            "max-width": "100%"
-                                                                        },
-                                                                        onclick: function() {
-                                                                            NewPost
-                                                                                .url =
-                                                                                this
-                                                                                .src
-                                                                        }
-                                                                    })
-                                                                )
-                                                            }
-                                                        )
+                                                                        m("img", {
+                                                                            "src": item,
+                                                                            "style": {
+                                                                                "max-width": "100%"
+                                                                            },
+                                                                            onclick: function () {
+                                                                                NewPost
+                                                                                    .url =
+                                                                                    this
+                                                                                        .src
+                                                                            }
+                                                                        })
+                                                                    )
+                                                                }
+                                                            )
                                                     ]
                                                 )
                                             )
                                         ]
                                     ),
                                     m("div", {
-                                            "class": "col-4 bg-body border",
-                                            "id": "infos"
-                                        },
+                                        "class": "col-4 bg-body border",
+                                        "id": "infos"
+                                    },
                                         m("div", {
-                                                "class": "row row-cols-1"
-                                            },
+                                            "class": "row row-cols-1"
+                                        },
                                             [
                                                 m("div", {
-                                                        "class": "col mt-2 d-flex align-items-center",
-                                                        "id": "sender"
-                                                    },
+                                                    "class": "col mt-2 d-flex align-items-center",
+                                                    "id": "sender"
+                                                },
                                                     [
                                                         m("img", {
                                                             "class": "iconProfile",
@@ -1495,24 +1477,24 @@ var NewPost = {
                                                                 .picture
                                                         }),
                                                         m("h4", {
-                                                                "class": "fw-bold ms-2"
-                                                            },
+                                                            "class": "fw-bold ms-2"
+                                                        },
                                                             User
-                                                            .response
-                                                            .given_name
+                                                                .response
+                                                                .given_name
                                                         )
                                                     ]
                                                 ),
                                                 m("div", {
-                                                        "class": "col mt-1",
-                                                        "id": "description"
-                                                    },
+                                                    "class": "col mt-1",
+                                                    "id": "description"
+                                                },
                                                     m("textarea", {
-                                                        "oninput": function() {
+                                                        "oninput": function () {
                                                             NewPost
                                                                 .body =
                                                                 this
-                                                                .value
+                                                                    .value
                                                         },
                                                         "class": "form-control textArea",
                                                         "id": "textAreaDescription",
@@ -1521,19 +1503,19 @@ var NewPost = {
                                                     })
                                                 ),
                                                 m("div", {
-                                                        "class": "col mt-1",
-                                                        "id": "send",
-                                                        "style": {
-                                                            "text-align": "end"
+                                                    "class": "col mt-1",
+                                                    "id": "send",
+                                                    "style": {
+                                                        "text-align": "end"
+                                                    }
+                                                },
+                                                    m("button", {
+                                                        "class": "btn border",
+                                                        onclick: function () {
+                                                            NewPost
+                                                                .post();
                                                         }
                                                     },
-                                                    m("button", {
-                                                            "class": "btn border",
-                                                            onclick: function() {
-                                                                NewPost
-                                                                    .post();
-                                                            }
-                                                        },
                                                         "Partager"
                                                     )
                                                 )
@@ -1553,8 +1535,8 @@ var NewPost = {
      * The function that displays it
      * The user must be logged in
      */
-    show: function() {
-        if(User.isLoged()) {
+    show: function () {
+        if (User.isLoged()) {
             this.isShow = true;
             m.redraw();
         }
@@ -1563,7 +1545,7 @@ var NewPost = {
     /**
      * The function that hides it
      */
-    hide: function() {
+    hide: function () {
         this.isShow = false;
         m.redraw();
     },
@@ -1572,25 +1554,25 @@ var NewPost = {
      * The function that post the post
      * It called after the user click on "Partager"
      */
-    post: function() {
+    post: function () {
         //Post ajouté
         NewPost.hide();
         return m.request({
-                method: "POST",
-                url: postPublicationUrl,
-                params: {
-                    access_token: User
-                        .getAccessToken(),
-                    pictureURL: NewPost
-                        .url,
-                    body: NewPost
-                        .body
-                }
-            })
-            .then(function(
+            method: "POST",
+            url: postPublicationUrl,
+            params: {
+                access_token: User
+                    .getAccessToken(),
+                pictureURL: NewPost
+                    .url,
+                body: NewPost
+                    .body
+            }
+        })
+            .then(function (
                 result) {
                 Post
-            .reload();
+                    .reload();
             })
     }
 
@@ -1605,8 +1587,8 @@ function httpGetAsync(theUrl,
 
     // set the state change callback to capture when the response comes in
     xmlHttp.onreadystatechange =
-        function() {
-            if(xmlHttp.readyState ==
+        function () {
+            if (xmlHttp.readyState ==
                 4 && xmlHttp.status ==
                 200) {
                 callback(xmlHttp
@@ -1642,9 +1624,9 @@ function tenorCallback_search(
     list = [];
     top_16_gifs.forEach(element => {
         list.push(element[
-                "media_formats"
-            ]["nanogif"]
-            ["url"]);
+            "media_formats"
+        ]["nanogif"]
+        ["url"]);
     });
     NewPost.listGif = list;
     m.redraw();
