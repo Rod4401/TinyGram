@@ -1,5 +1,5 @@
 <h1>
- <img src="https://github.com/Rod4401/TinyGram/blob/f4a5b0021d2b124345ef0f746495068a22cd6717/src/main/webapp/icon.ico" width="320" alt="Material for MkDocs"><br>
+ <img src="https://github.com/Rod4401/TinyGram/blob/f4a5b0021d2b124345ef0f746495068a22cd6717/src/main/webapp/icon.ico" width="320" alt="TinyGram Logo"><br>
  <strong>TinyGram</strong>
 </h1>
 
