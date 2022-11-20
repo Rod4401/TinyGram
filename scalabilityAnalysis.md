@@ -3,7 +3,7 @@
 Ceci est notre rapport concernant la scalabilité de notre TinyGram.
 
 ## Avant-propos 
-Afin de réaliser ce rapport, nous avons utilisé les journaux de notre projet ainsi que d'autres présent sur Google Cloud Platform pour vérifier les temps de réponses moyens de notre TinyGram.  Nous avons également vérifié l'absence d'incohérence entre les valeurs offertes par GCP et celles fournies dans la console de navigateur.
+Afin de réaliser ce rapport, nous avons utilisé les journaux de notre projet ainsi que d'autres présent sur Google Cloud Platform pour vérifier les temps de réponses moyens de notre TinyGram.  Nous avons également vérifié l'absence d'incohérence entre les valeurs offertes par GCP et celles fournies dans la console de navigateur.\
 Et pour obtenir un plus large échantillon de données pour réaliser nos latences, nous avons invité une multitudes de nos connaissances à essayer notre TinyGram.
 
 ## Latence moyenne du site complet
@@ -34,24 +34,20 @@ Bien sûr, nous ne prendrons pas en compte le délai de provisionnement de la ma
 
 ### Combien de temps pour poster un post ?
 
-Sur une cinquantaine de requêtes, nous avons mesuré un temps de réponse compris entre 300ms et 550ms pour poster un post. \
-
+Sur une cinquantaine de requêtes, nous avons mesuré un temps de réponse compris entre 300ms et 550ms pour poster un post.\
 Donc théoriquement, un utilisateur pourrait poster entre 1 et 3 post par seconde, ce qui est irréalisable par un humain (dans des conditions strictement normales).\
-
 Et avec notre conception, nous ne sommes pas limités par le nombre de followers, c'est-à-dire que le nouvel utilisateur mettera autant de temps à poster un post qu'un  utilisateur à plusieurs milliers de followers.
 
 ### Combien de temps pour récupérer des posts ?
 
-Sur environ 700 requêtes, nous avons mesuré un temps de réponse compris entre 50ms et 200ms pour récupérer 10 posts (avec ou sans curseur).\
+Sur environ 700 requêtes, nous avons mesuré un temps de réponse compris entre 50ms et 200ms pour récupérer 10 posts (avec ou sans curseur).<br>
 Donc théoriquement, pour récupérer 100 posts, il faudrait 15 secondes mais étant donné qu'on charge les posts par blocs de 10, il faudrait effectuer 10 requêtes tout en veillant à bien utiliser le curseur.\
-
 Maintenant pour récupérer 500 messages, il faudrait 1 minute et 15 secondes et effectuer 50 requêtes pour arriver à récupérer un tel nombre de posts.\
-
 Bien sûr, les temps donnés précédemment ne prennent pas en compte les délais coté client.
 
 ### Combien de likes par seconde ?
 
-Sur une cinquantaine de requêtes, nous avons mesuré un temps de réponse compris entre 140ms et 250ms pour liker un post.\
+Sur une cinquantaine de requêtes, nous avons mesuré un temps de réponse compris entre 140ms et 250ms pour liker un post.<br>
 Il semble envisageable de penser qu'un utilisateur pourrait liker entre 4 et 7 fois par seconde.
 
 
@@ -76,14 +72,14 @@ Chaque entitée possède une clé unique relatif au numéro de l'identifiant du 
 <img src="https://github.com/Rod4401/TinyGram/blob/5d62b7058add12b2ea237a93f94efdd06fbdd8b8/readMeFiles/kinds/Kinds_Like.png" alt="Notre liste de Likes"><br>
 
 Nous gérons les likes d'une façon spéciale, on ne mémorise pas des listes mais les arêtes qui lient un User à un Post.
-Si une arête existe, le Post A a été liké par l'User B sinon ce n'est pas le cas...
-Pour cela, nous avons une entitée nommée "Like" qui est en fait, un triplet composé de l'ID du Post, celui de l'User qui like ainsi que la date auquel cette action a été effectuée.
+Si une arête existe, le Post A a été liké par l'User B sinon ce n'est pas le cas...\
+Pour cela, nous avons une entitée nommée "Like" qui est en fait, un triplet composé de l'ID du Post, celui de l'User qui like ainsi que la date auquel cette action a été effectuée.\
 Bien sûr, la clé de l'entitée ne dépend que des deux ID et sera unique, un User ne peux liker qu'une seule fois.
 
 <img src="https://github.com/Rod4401/TinyGram/blob/5d62b7058add12b2ea237a93f94efdd06fbdd8b8/readMeFiles/kinds/Kinds_LikeCounter.png" alt="Notre liste de compteurs de likes"><br>
 
-Ensuite, pour compter tous les likes, nous allons faire une somme de compteurs, c'est-à-dire qu'à la création d'un Post, nous allons créer 10 compteurs (entitée "LikeCounter") qui auront comme parent le Post créé.
-Lorsqu'un User likera un post, nous prendrons en compte la date de réalisation pour savoir quel compteur incrémenter, le compteur incrémenté est le modulo 10 des secondes.
+Ensuite, pour compter tous les likes, nous allons faire une somme de compteurs, c'est-à-dire qu'à la création d'un Post, nous allons créer 10 compteurs (entitée "LikeCounter") qui auront comme parent le Post créé.\
+Lorsqu'un User likera un post, nous prendrons en compte la date de réalisation pour savoir quel compteur incrémenter, le compteur incrémenté est le modulo 10 des secondes.\
 Cette manipulation, permet en théorie de répartir la charge sur l'intégralité des compteurs.
 
 ### Les follows et les compteurs de followers
@@ -91,15 +87,15 @@ Cette manipulation, permet en théorie de répartir la charge sur l'intégralit�
 <img src="https://github.com/Rod4401/TinyGram/blob/5d62b7058add12b2ea237a93f94efdd06fbdd8b8/readMeFiles/kinds/Kinds_Follow.png" alt="Notre liste de follows"><br>
 
 Nous gérons les follow de la même façon que les likes, on ne mémorise pas des listes mais les arêtes qui lient un User A à un User B.
-Si une arête existe, l'User A a suivi l'User B sinon ce n'est pas le cas...
-Pour cela, nous avons une entitée nommée "Follow" qui est en fait, un triplet composé de l'ID du User A, celui de l'User B ainsi que la date auquel cette action a été effectuée.
-Bien sûr, la clé de l'entitée ne dépend que des deux ID et sera unique, un User A ne peux follow l'User B qu'une seule fois.
+Si une arête existe, l'User A a suivi l'User B sinon ce n'est pas le cas...\
+Pour cela, nous avons une entitée nommée "Follow" qui est en fait, un triplet composé de l'ID du User A, celui de l'User B ainsi que la date auquel cette action a été effectuée.\
+Bien sûr, la clé de l'entitée ne dépend que des deux ID et sera unique, un User A ne peux follow l'User B qu'une seule fois.\
 On vérifie également que l'User A ne puisse pas follow l'User A, ce qui serait bête.
 
 <img src="https://github.com/Rod4401/TinyGram/blob/5d62b7058add12b2ea237a93f94efdd06fbdd8b8/readMeFiles/kinds/Kinds_FollowCounter.png" alt="Notre liste compteurs de followers"><br>
 
-Ensuite, pour compter tous les follow, nous allons faire une somme de compteurs, c'est-à-dire qu'à la création d'un User, nous allons créer 10 compteurs (entitée "FollowCounter") qui auront comme parent le User créé.
-Lorsqu'un User A follow un User B, ce sera un des compteurs de l'User B qui sera incrémenté, pour savoir lequel, nous prendrons en compte la date de réalisation pour savoir quel compteur incrémenter, le compteur incrémenté est le modulo 10 des secondes.
+Ensuite, pour compter tous les follow, nous allons faire une somme de compteurs, c'est-à-dire qu'à la création d'un User, nous allons créer 10 compteurs (entitée "FollowCounter") qui auront comme parent le User créé.\
+Lorsqu'un User A follow un User B, ce sera un des compteurs de l'User B qui sera incrémenté, pour savoir lequel, nous prendrons en compte la date de réalisation pour savoir quel compteur incrémenter, le compteur incrémenté est le modulo 10 des secondes.\
 Cette manipulation, permet en théorie de répartir la charge sur l'intégralité des compteurs.
 
 ## Nos index
