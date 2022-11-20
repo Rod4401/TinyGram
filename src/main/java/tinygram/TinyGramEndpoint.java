@@ -134,10 +134,10 @@ public class TinyGramEndpoint {
         if(userInfos.fname.length() > 50 || userInfos.lname.length() > 50) throw new BadRequestException("User informations too long: firstName or lastName might be too long !");
 
         //  Check if the provided picture profile URL is from google
-        Pattern pattern = Pattern.compile("^https:\\/\\/lh[0-9]\\.googleusercontent\\.com\\/a\\/[a-zA-Z0-9]+=.*$");
-        Matcher matcher = pattern.matcher(userInfos.pictureURL);
+        //Pattern pattern = Pattern.compile("^https:\\/\\/lh[0-9]\\.googleusercontent\\.com\\/a\\/[a-zA-Z0-9]+=.*$");
+        //Matcher matcher = pattern.matcher(userInfos.pictureURL);
 
-        if(!matcher.matches()) throw new BadRequestException("Invalid profile picture URL: Profile picture URL must be a picture of a google account !");
+        //if(!matcher.matches()) throw new BadRequestException("Invalid profile picture URL: Profile picture URL must be a picture of a google account !");
         
         DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
 
