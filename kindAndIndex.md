@@ -1,6 +1,6 @@
 # Nos "Kinds" et nos index
 
->   **Auteurs:**\
+>   **Auteurs:**
 >   - Rodrigue    Meunier
 >   - Quentin     Gomes Dos Reis
 >   - Valentin    Goubon

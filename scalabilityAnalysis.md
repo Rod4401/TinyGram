@@ -1,6 +1,6 @@
 # Analyse de la scalabilité
 
->   **Auteurs:**\
+>   **Auteurs:**
 >   - Rodrigue    Meunier
 >   - Quentin     Gomes Dos Reis
 >   - Valentin    Goubon
