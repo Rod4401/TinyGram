@@ -18,8 +18,8 @@ Tous d'abord, nous avons le spécialiste en front qui n'est autre que **[Rodrigu
 
 ## :page_facing_up: Rendu
 
-- [L'analyse de scalabilité](https://github.com/Rod4401/TinyGram/blob/b9f6277ee133f022620fcd28981174f357b431f9/scalabilityAnalysis.md)
-- [Nos kinds et index](https://github.com/Rod4401/TinyGram/blob/b136b61fd33f6883c9d09ebada81d0e7af34af11/kindAndIndex.md)
+- [L'analyse de scalabilité](https://github.com/Rod4401/TinyGram/blob/main/scalabilityAnalysis.md)
+- [Nos kinds et index](https://github.com/Rod4401/TinyGram/blob/main/kindAndIndex.md)
 
 
 ## :speech_balloon: Notre ressenti sur le projet
