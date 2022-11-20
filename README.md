@@ -16,6 +16,12 @@ Bonne question me direz-vous...\
 Nous sommes 3 étudiants de Master 1 ALMA, une courte présentation s'impose...\
 Tous d'abord, nous avons le spécialiste en front qui n'est autre que **[Rodrigue Meunier](https://github.com/Rod4401)** puis ensuite le gars qui agit dans l'ombre sur le back nommé **[Quentin Gomes Dos Reis](https://github.com/QGDev)** et enfin, nous avons le seul et l'unique **[Valentin Goubon](https://github.com/TinkyValou)**.
 
+## :page_facing_up: Rendu
+
+- [L'analyse de scalabilité](https://github.com/Rod4401/TinyGram/blob/b9f6277ee133f022620fcd28981174f357b431f9/scalabilityAnalysis.md)
+- [Nos kinds et index](https://github.com/Rod4401/TinyGram/blob/b136b61fd33f6883c9d09ebada81d0e7af34af11/kindAndIndex.md)
+
+
 ## :speech_balloon: Notre ressenti sur le projet
 Graçe à TinyGram, nous avons pu être confronté avec les problèmes majeurs des réseaux sociaux. \
 N'ayant pas beaucoup de documentation à ce sujet sur des solutions "optimales", il faut jouer de l'imagination de chacun. \
